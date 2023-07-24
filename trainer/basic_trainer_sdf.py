@@ -12,7 +12,7 @@ from os.path import join
 from tqdm import tqdm
 from collections import Counter
 
-from lib.individual_checkpoint_loader import individual_conditional_sdf_checkpoint_
+from libs.individual_checkpoint_loader import individual_conditional_sdf_checkpoint_
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 #                                                                                                                                                                     #

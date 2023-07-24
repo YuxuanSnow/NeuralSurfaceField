@@ -2,8 +2,8 @@
 import torch
 import torch.nn.functional as F
 
-from lib.canonicalization_root_finding import search
-from lib.skinning_functions import InvSkinModel, InvSkinModel_RotationOnly, SkinModel, SkinModel_RotationOnly
+from libs.canonicalization_root_finding import search
+from libs.skinning_functions import InvSkinModel, InvSkinModel_RotationOnly, SkinModel, SkinModel_RotationOnly
 from models.person_specific_feature import SubjectGlobalLatentFeature
 from models.person_diffused_skinning import SmoothDiffusedSkinningField 
 from models.igr_sdf_net import IGRSDFNet

@@ -6,18 +6,20 @@ import numpy as np
 from libs.serialization import ready_arguments
 from libs.smplpytorch import (th_posemap_axisang, th_with_zeros, th_pack, make_list, subtract_flat_id)
 
+ROOT = '/home/yuxuan/project/NeuralSurfaceField'
+
 # Forward Skiningg & Inverse Skining model with translation (for points) or not (for rotation)
 class SkinModel(nn.Module):
     def __init__(self, gender='male'):
             super(SkinModel, self).__init__()
-            self.load_smpl_skeleton(model_root='/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/smplpytorch/smplpytorch/native/models', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
         if gender == 'male':
             model_path = os.path.join(model_root, 'basicmodel_m_lbs_10_207_0_v1.0.0.pkl')
         elif gender == 'female':
-            model_path = os.path.join(model_root, 'basicmodel_f_lbs_10_207_0_v1.0.0.pkl')
+            model_path = os.path.join(model_root, 'basicModel_f_lbs_10_207_0_v1.0.0.pkl')
         else:
             assert False, "Given gender not available"
         smpl_data = ready_arguments(model_path)
@@ -107,14 +109,14 @@ class SkinModel(nn.Module):
 class InvSkinModel(nn.Module):
     def __init__(self, gender='male'):
             super(InvSkinModel, self).__init__()
-            self.load_smpl_skeleton(model_root='/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/smplpytorch/smplpytorch/native/models', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
         if gender == 'male':
             model_path = os.path.join(model_root, 'basicmodel_m_lbs_10_207_0_v1.0.0.pkl')
         elif gender == 'female':
-            model_path = os.path.join(model_root, 'basicmodel_f_lbs_10_207_0_v1.0.0.pkl')
+            model_path = os.path.join(model_root, 'basicModel_f_lbs_10_207_0_v1.0.0.pkl')
         else:
             assert False, "Given gender not available"
         smpl_data = ready_arguments(model_path)
@@ -192,14 +194,14 @@ class SkinModel_RotationOnly(nn.Module):
     # rotation only skinning
     def __init__(self, gender='male'):
             super(SkinModel_RotationOnly, self).__init__()
-            self.load_smpl_skeleton(model_root='/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/smplpytorch/smplpytorch/native/models', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
         if gender == 'male':
             model_path = os.path.join(model_root, 'basicmodel_m_lbs_10_207_0_v1.0.0.pkl')
         elif gender == 'female':
-            model_path = os.path.join(model_root, 'basicmodel_f_lbs_10_207_0_v1.0.0.pkl')
+            model_path = os.path.join(model_root, 'basicModel_f_lbs_10_207_0_v1.0.0.pkl')
         else:
             assert False, "Given gender not available"
         smpl_data = ready_arguments(model_path)
@@ -259,14 +261,14 @@ class InvSkinModel_RotationOnly(nn.Module):
     # rotation only skinning
     def __init__(self, gender='male'):
             super(InvSkinModel_RotationOnly, self).__init__()
-            self.load_smpl_skeleton(model_root='/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/smplpytorch/smplpytorch/native/models', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
         if gender == 'male':
             model_path = os.path.join(model_root, 'basicmodel_m_lbs_10_207_0_v1.0.0.pkl')
         elif gender == 'female':
-            model_path = os.path.join(model_root, 'basicmodel_f_lbs_10_207_0_v1.0.0.pkl')
+            model_path = os.path.join(model_root, 'basicModel_f_lbs_10_207_0_v1.0.0.pkl')
         else:
             assert False, "Given gender not available"
         smpl_data = ready_arguments(model_path)

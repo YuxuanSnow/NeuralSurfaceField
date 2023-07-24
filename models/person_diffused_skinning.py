@@ -5,7 +5,7 @@ from torch.nn import functional as F
 import trimesh
 import numpy as np
 
-from lib.sample import compute_smaple_on_body_mask_w_batch
+from libs.sample import compute_smaple_on_body_mask_w_batch
 
 
 

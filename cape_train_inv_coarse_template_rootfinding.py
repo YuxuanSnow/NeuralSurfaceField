@@ -2,7 +2,7 @@
 import torch
 import torch.nn.functional as F
 
-from lib.skinning_functions import InvSkinModel, InvSkinModel_RotationOnly, SkinModel, SkinModel_RotationOnly
+from libs.skinning_functions import InvSkinModel, InvSkinModel_RotationOnly, SkinModel, SkinModel_RotationOnly
 from models.person_specific_feature import SubjectGlobalLatentFeature
 from models.person_diffused_skinning import SmoothDiffusedSkinningField 
 
@@ -18,7 +18,7 @@ import argparse
 import os
 
 from models.igr_sdf_net import IGRSDFNet, condition_reconstruction
-from lib.smpl_paths import SmplPaths
+from libs.smpl_paths import SmplPaths
 
 from models.basic_trainer import *
 from utils.save_mesh_io import *

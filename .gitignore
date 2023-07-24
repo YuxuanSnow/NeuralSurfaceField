@@ -9,6 +9,9 @@ __pycache__/
 # smpl model
 smpl_model/*.pkl
 
+# data
+Data/*
+
 # Distribution / packaging
 .Python
 build/

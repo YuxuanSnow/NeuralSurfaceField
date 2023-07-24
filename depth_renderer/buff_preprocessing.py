@@ -1,14 +1,14 @@
 import numpy as np
 import os
-from lib.smpl_paths import SmplPaths
+from libs.smpl_paths import SmplPaths
 import torch
 import pickle
 
-from lib.skinning_functions import SkinModel, InvSkinModel
+from libs.skinning_functions import SkinModel, InvSkinModel
 
 from random import randrange
 
-from lib.torch_functions import np2tensor, tensor2np
+from libs.torch_functions import np2tensor, tensor2np
 
 from pytorch3d.structures.meshes import Meshes
 
@@ -18,10 +18,10 @@ from pytorch3d.renderer.mesh.rasterize_meshes import pix_to_non_square_ndc
 
 import math
 
-from lib.sample import compute_smaple_on_body_mask_wo_batch
-from lib.data_io import generate_point_cloud
+from libs.sample import compute_smaple_on_body_mask_wo_batch
+from libs.data_io import generate_point_cloud
 
-from lib.barycentric_corr_finding import face_vertices, point_to_mesh_distance, barycentric_coordinates_of_projection
+from libs.barycentric_corr_finding import face_vertices, point_to_mesh_distance, barycentric_coordinates_of_projection
 
 import open3d as o3d
 
