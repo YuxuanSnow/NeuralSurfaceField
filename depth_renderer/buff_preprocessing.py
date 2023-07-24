@@ -1,5 +1,8 @@
+DATA_DIR = '/home/yuxuan/project/NeuralSurfaceField/Data_scan/'
+ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+
 import sys
-sys.path.append('..') 
+sys.path.append(ROOT_DIR) 
 
 import numpy as np
 import os
@@ -32,8 +35,6 @@ import pymeshlab
 
 scale = 1
 
-DATA_DIR = './Data_scan/'
-ROOT_DIR = './'
 
 # undo root + body mask
 def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply, subject_shape_pkl, save_name, rasterizer, renderer, r_rot_y, skinner, inv_skinner, location_dict, debug=False):
@@ -184,8 +185,9 @@ def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply,
             'head_mask': tensor2np(head_mask),
             'rot_vector': r_rot_y.as_rotvec(),
             'depth_img': tensor2np(fragments_buff.zbuf[0, :, :, 0]).astype('float32'),
-            'color_img': tensor2np(rgb_img[0, :, :, :3]).astype('float32')}          
-    debug=True
+            'color_img': tensor2np(rgb_img[0, :, :, :3]).astype('float32')}     
+         
+    debug=False
     if debug:
         save_name_scan = ROOT_DIR + "pc_scan.ply"
         save_name_corr = ROOT_DIR + "pc_corr.ply"
@@ -196,7 +198,7 @@ def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply,
         generate_point_cloud(captured_pcd_loc_valid, save_name_scan, colors=captured_pcd_color_valid)
         generate_point_cloud(tensor2np(canonical_smpl_corr_valid), save_name_corr, colors=captured_pcd_color_valid)
         generate_point_cloud(tensor2np(points_on_body), save_name_on_body_cano)
-        generate_point_cloud(tensor2np(np2tensor(captured_pcd_loc_valid)[~hand_mask]), save_name_on_body_posed)
+        generate_point_cloud(tensor2np(np2tensor(captured_pcd_loc_valid).cuda()[~hand_mask]), save_name_on_body_posed)
         generate_point_cloud(tensor2np(shaped_smpl_mesh.verts_packed()), save_name_cano_verts)
         generate_point_cloud(tensor2np(textured_buff_mesh.verts_packed()), save_name_scan_verts)
 
@@ -222,7 +224,7 @@ if __name__ == "__main__":
     
     if args.version == 'depth_rot_trans':
         if args.rot == 'const':
-            save_path = './Data/BuFF/buff_release_rot_const/'
+            save_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
             print("Preprocessing depth with constent rot view around y axis")
         else:
             assert(False)
@@ -330,7 +332,7 @@ if __name__ == "__main__":
         
         i = 0
 
-        for ply_file_name in tqdm(os.listdir(action_path)):
+        for ply_file_name in tqdm(sorted(os.listdir(action_path))):
             
             if ply_file_name.endswith('.ply'):
                 frame_texture_mesh_path = os.path.join(action_path, ply_file_name)

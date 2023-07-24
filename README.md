@@ -16,20 +16,22 @@ with `environment.yml` file (if you have old Nvidia GPU, compatible with cuda 11
 ```
 conda env create -f environment.yml
 ```
-or manually (if you have new Nvidia GPU, compatible with cuda 11.8):
+or manually (if you have new Nvidia GPU, compatible with cuda 11.7):
 ```
 conda create -n nsf python=3.9
+conda activate nsf
 # install pytorch
-pip install torch==2.0.0+cu118 torchvision==0.15.1+cu118 torchaudio==2.0.1 --index-url https://download.pytorch.org/whl/cu118
+conda install pytorch==1.13.0 torchvision==0.14.0 torchaudio==0.13.0 pytorch-cuda=11.7 -c pytorch -c nvidia
 # install pytorch3d
 conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 conda install pytorch3d -c pytorch3d
 # install other dependencies
-conda install scipy==1.10.1
+pip install scipy==1.10.1
 pip install open3d
 pip install pymeshlab
 pip install chumpy
- pip install opencv-python
+pip install opencv-python
+python -m pip install numpy==1.23.1
 ```
 In addition, install `kaolin` from source (https://kaolin.readthedocs.io/en/latest/notes/installation.html) and modify:
 ```
@@ -73,6 +75,7 @@ DATA_DIR/BuFF/buff_release/misc/subj_genders.pkl
 ```
 4. Render RGB image, rasterize depth image, save unprojected colorful point cloud
 ```
+cd depth_renderer/
 python buff_preprocessing.py
 ```
 
