@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..') 
+
 import numpy as np
 import os
 from libs.smpl_paths import SmplPaths
@@ -28,6 +31,9 @@ import open3d as o3d
 import pymeshlab
 
 scale = 1
+
+DATA_DIR = './Data_scan/'
+ROOT_DIR = './'
 
 # undo root + body mask
 def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply, subject_shape_pkl, save_name, rasterizer, renderer, r_rot_y, skinner, inv_skinner, location_dict, debug=False):
@@ -179,20 +185,22 @@ def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply,
             'rot_vector': r_rot_y.as_rotvec(),
             'depth_img': tensor2np(fragments_buff.zbuf[0, :, :, 0]).astype('float32'),
             'color_img': tensor2np(rgb_img[0, :, :, :3]).astype('float32')}          
-    debug=False
+    debug=True
     if debug:
-        save_name_scan = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_scan.ply"
-        save_name_corr = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_corr.ply"
-        save_name_on_body_cano = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_on_body_cano.ply"
-        save_name_on_body_posed = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_on_body_posed.ply"
-        save_name_cano_verts = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_v_cano.ply"
-        save_name_scan_verts = "/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/pc_v_posed.ply"
+        save_name_scan = ROOT_DIR + "pc_scan.ply"
+        save_name_corr = ROOT_DIR + "pc_corr.ply"
+        save_name_on_body_cano = ROOT_DIR + "pc_on_body_cano.ply"
+        save_name_on_body_posed = ROOT_DIR + "pc_on_body_posed.ply"
+        save_name_cano_verts = ROOT_DIR + "pc_v_cano.ply"
+        save_name_scan_verts = ROOT_DIR + "pc_v_posed.ply"
         generate_point_cloud(captured_pcd_loc_valid, save_name_scan, colors=captured_pcd_color_valid)
         generate_point_cloud(tensor2np(canonical_smpl_corr_valid), save_name_corr, colors=captured_pcd_color_valid)
         generate_point_cloud(tensor2np(points_on_body), save_name_on_body_cano)
         generate_point_cloud(tensor2np(np2tensor(captured_pcd_loc_valid)[~hand_mask]), save_name_on_body_posed)
         generate_point_cloud(tensor2np(shaped_smpl_mesh.verts_packed()), save_name_cano_verts)
         generate_point_cloud(tensor2np(textured_buff_mesh.verts_packed()), save_name_scan_verts)
+
+        assert False
    
     np.save(save_name, data)
     
@@ -210,11 +218,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    buff_path = '/mnt/qb/work/ponsmoll/yxue80/project/Data/BuFF/buff_release/'
+    buff_path = DATA_DIR + 'BuFF/buff_release/'
     
     if args.version == 'depth_rot_trans':
         if args.rot == 'const':
-            save_path = '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/Data/BuFF/buff_release_rot_const/'
+            save_path = './Data/BuFF/buff_release_rot_const/'
             print("Preprocessing depth with constent rot view around y axis")
         else:
             assert(False)
@@ -291,7 +299,7 @@ if __name__ == "__main__":
     cut_offset = 0.03
 
     from pytorch3d.io import load_ply
-    file = load_ply(f='/mnt/qb/work/ponsmoll/yxue80/project/Data/BuFF/buff_release/minimal_body_shape/'+args.seq+'/'+args.seq+'_minimal.ply')
+    file = load_ply(f=DATA_DIR+'BuFF/buff_release/minimal_body_shape/'+args.seq+'/'+args.seq+'_minimal.ply')
     subject_mesh = Meshes(verts=[file[0].float()], faces=[file[1].float()]).cuda()
     smpl_vertices = subject_mesh.verts_packed()
 
