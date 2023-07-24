@@ -28,6 +28,8 @@ conda install pytorch3d -c pytorch3d
 conda install scipy==1.10.1
 pip install open3d
 pip install pymeshlab
+pip install chumpy
+ pip install opencv-python
 ```
 In addition, install `kaolin` from source (https://kaolin.readthedocs.io/en/latest/notes/installation.html) and modify:
 ```
