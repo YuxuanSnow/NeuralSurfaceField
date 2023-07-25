@@ -6,31 +6,23 @@ sys.path.append(ROOT_DIR)
 
 import numpy as np
 import os
-from libs.smpl_paths import SmplPaths
 import torch
 import pickle
 
-from libs.skinning_functions import SkinModel, InvSkinModel
-
 from random import randrange
 
-from libs.torch_functions import np2tensor, tensor2np
-
-from pytorch3d.structures.meshes import Meshes
-
 from scipy.spatial.transform import Rotation as ScipyRot
-
+from pytorch3d.structures.meshes import Meshes
 from pytorch3d.renderer.mesh.rasterize_meshes import pix_to_non_square_ndc
 
-import math
-
+from libs.smpl_paths import SmplPaths
+from libs.skinning_functions import SkinModel, InvSkinModel
+from libs.torch_functions import np2tensor, tensor2np
 from libs.sample import compute_smaple_on_body_mask_wo_batch
 from libs.data_io import generate_point_cloud
-
 from libs.barycentric_corr_finding import face_vertices, point_to_mesh_distance, barycentric_coordinates_of_projection
 
 import open3d as o3d
-
 import pymeshlab
 
 scale = 1
