@@ -12,6 +12,9 @@ smpl_model/*.pkl
 # data
 Data/*
 Data_scan/*
+diffused_smpl_skinning_field/*.npy
+diffused_smpl_skinning_field/*.ply
+visualization/*
 
 # Distribution / packaging
 .Python

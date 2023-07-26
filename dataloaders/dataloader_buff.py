@@ -1,25 +1,43 @@
-from os.path import split
+from os.path import split, join
 import pickle as pkl
 import numpy as np
 import torch
 from dataloaders.dataloader_base import BaseLoader
 from tqdm import tqdm
+import os
 
 from scipy.spatial.transform import Rotation as ScipyRot
 
-
+# Dataloader for BuFF inv skinning: process all files, without split_file;
 class DataLoader_Buff_depth(BaseLoader):
 
-    def __init__(self, mode, split_file, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
+    def __init__(self, mode='train', proprocessed_path=None, split_file=None, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
         # num_points: each frame has different number of depth point cloud. Repeat some to get same points of sample in one batch.
 
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.mode = mode
-        with open(split_file, "rb") as f:
-            self.split = pkl.load(f)
 
-        self.data = self.split[mode]
+        if proprocessed_path is None and split_file is None:
+            raise ValueError("proprocessed_path and split_file cannot be both None")
+        
+        self.cano_available = False
+
+        if split_file is not None:
+            with open(split_file, "rb") as f:
+                self.split = pkl.load(f)
+            self.data = self.split[mode]
+
+            self.cano_available = True
+        else:
+            self.data = []
+            for subj in os.listdir(proprocessed_path):
+                for garment_action in os.listdir(join(proprocessed_path, subj)):
+                    for preprocessed_npy_file in sorted(os.listdir(join(proprocessed_path, subj, garment_action))):
+                        if preprocessed_npy_file.split(".")[0].endswith('cano'):
+                            continue
+                        self.data.append(join(proprocessed_path, subj, garment_action, preprocessed_npy_file))
+                    
         self.num_points = num_points
         self.subject_index_dict = subject_index_dict
 
@@ -33,6 +51,8 @@ class DataLoader_Buff_depth(BaseLoader):
         self.depth_map = []
         self.rgb_map = []
         self.path = []
+
+        self.num_org_points = []
 
         self._init_dataset()
         print('Data loaded, in total {} {} examples.\n'.format(len(self.scan_points), self.mode))
@@ -64,8 +84,8 @@ class DataLoader_Buff_depth(BaseLoader):
         for idx, file_path in enumerate(tqdm(self.data)):
             dd = np.load(file_path, allow_pickle=True).item()
 
-            subject = split(file_path)[0].split('/')[12][:5]                     # if local workstaiton then 9; if cluster then 12
-            garment = split(file_path)[0].split('/')[13].split('_')[0]
+            subject = split(file_path)[0].split('/')[9][:5]                     # if local workstaiton then 9; if cluster then 12
+            garment = split(file_path)[0].split('/')[10].split('_')[0]
             subject_garment = subject + "_" + garment
             subject_garment_idx = self.subject_index_dict[subject_garment]
             self.feature_cube_idx.append(torch.tensor(subject_garment_idx).long())
@@ -96,6 +116,7 @@ class DataLoader_Buff_depth(BaseLoader):
             self.depth_map.append(torch.tensor(dd['depth_img']).float())
             self.rgb_map.append(torch.tensor(dd['color_img']).float())
             self.path.append(file_path)
+            self.num_org_points.append(num_points_input)
 
     def __getitem__(self, idx):
         
@@ -111,4 +132,5 @@ class DataLoader_Buff_depth(BaseLoader):
                 'skinning_weights': self.skinning_weights[idx],
                 'trans': self.trans[idx],
                 'roty': self.roty[idx],
-                'path': self.path[idx]}
+                'path': self.path[idx],
+                'num_org_points': self.num_org_points[idx]}

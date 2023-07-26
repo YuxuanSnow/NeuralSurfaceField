@@ -206,7 +206,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--seq', default='00096')
+    parser.add_argument('--seq', default='00032')
     parser.add_argument('--version', default='depth_rot_trans')
     parser.add_argument('--rot', default='const')
 
