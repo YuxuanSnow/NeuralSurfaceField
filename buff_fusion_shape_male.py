@@ -29,6 +29,8 @@ from libs.sample import compute_smaple_on_body_mask_w_batch
 from pytorch3d.ops import sample_points_from_meshes
 from pytorch3d.structures import Meshes
 
+import open3d as o3d
+
 class Trainer(Basic_Trainer_sdf):
     
     # test on seen subjects but unseen subject
@@ -41,7 +43,7 @@ class Trainer(Basic_Trainer_sdf):
 
         with torch.no_grad():
 
-            self.set_feat_training_mode(train_flag=True)
+            self.set_feat_training_mode(train_flag=False)
             
             for n, batch in enumerate(tqdm(val_data_loader)):
 
@@ -124,7 +126,93 @@ class Trainer(Basic_Trainer_sdf):
 
                 np.save(file_path_cano, dd)
 
+    def fit_smpl_fusion_shape(self, pretrained=None, checkpoint=None):
+
+        from pytorch3d.loss import (
+            mesh_edge_loss, 
+            mesh_laplacian_smoothing
+        )
+        from pytorch3d.ops import SubdivideMeshes
+        from pytorch3d.io import save_ply
+
+        epoch = self.load_checkpoint(path=pretrained, number=checkpoint)
+        print('Fitting SMPL with epoch {}'.format(epoch))
+
+        self.set_module_training_mode(train_flag=False)
+        self.set_feat_training_mode(train_flag=False)
+
+        for subj_gar in self.dataset.subject_index_dict.keys():
+
+            subj_gar_idx = self.dataset.subject_index_dict.get(subj_gar)
             
+            # smpl mesh of minimal shape
+            smpl_verts = self.diffused_skinning_field.smpl_ref_verts.to(self.device)[subj_gar_idx]
+            smpl_faces = self.diffused_skinning_field.smpl_ref_faces.to(self.device)
+            smpl_mesh = Meshes(verts=[smpl_verts.float()], faces=[smpl_faces.float()])
+
+            deform_verts = torch.full(smpl_mesh.verts_packed().shape, 0.0, device=self.device, requires_grad=True)
+            optimizer = torch.optim.SGD([deform_verts], lr=1.0, momentum=0.9)
+
+            # Number of optimization steps
+            Niter = 500
+            # Weight for the sdf loss
+            w_sdf = 1
+            # Weight for mesh edge loss
+            w_edge = 5.0 
+            # Weight for mesh laplacian smoothing
+            w_laplacian = 0.1 
+            # Plot period for the losses
+            plot_period = 100
+            loop = tqdm(range(Niter))
+
+            for i in loop:
+                # Initialize optimizer
+                optimizer.zero_grad()
+
+                # Deform the mesh
+                new_src_mesh = smpl_mesh.offset_verts(deform_verts)
+                smpl_points, smpl_normals = sample_points_from_meshes(new_src_mesh, num_samples=50000, return_normals=True)
+                
+                # and (b) the edge length of the predicted mesh
+                loss_edge = mesh_edge_loss(new_src_mesh)
+                # mesh laplacian smoothing
+                loss_laplacian = mesh_laplacian_smoothing(new_src_mesh, method="uniform")
+                
+                query_value = self.subject_global_latent(smpl_points.permute(0, 2, 1), torch.tensor([subj_gar_idx]).cuda()) # [B, 256+3, num_points]
+                
+                logits = {}
+                logits.update(self.conditional_sdf(query_value))  # sdf_surface, nml_surface
+                logits.update({'z_global': query_value[:, 3:, :]})      # [B, 256, N]
+                pred_sdf = logits['sdf_surface'].squeeze()               # [B, N1]
+
+                # all sampled points should have sdf equals zero
+                loss_sdf = F.l1_loss(pred_sdf, torch.zeros_like(pred_sdf), reduction='none').mean()
+                loss = loss_sdf * w_sdf  + loss_edge * w_edge + loss_laplacian * w_laplacian
+                
+                # Print the losses
+                loop.set_description('total_loss = %.6f' % loss)
+
+                # Plot mesh
+                if i % plot_period == 0:
+
+                    pcd = o3d.geometry.PointCloud()
+                    # pcd.points = o3d.utility.Vector3dVector(np.concatenate((new_src_mesh.verts_packed().detach().cpu().numpy(), mc_mesh.verts_packed().detach().cpu().numpy())))
+                    pcd.points = o3d.utility.Vector3dVector((new_src_mesh.verts_packed().detach().cpu().numpy()))
+                    # o3d.visualization.draw_geometries([pcd])
+
+                # Optimization step
+                loss.backward()
+                optimizer.step()
+
+            save_path = ROOT_DIR + 'BuFF/Fusion_shape/smpl_D_' + subj_gar + '.ply'
+            save_subdivided_path = ROOT_DIR + 'BuFF/Fusion_shape/smpl_D_' + subj_gar + '_subdivided.ply'å
+
+            mesh_divider = SubdivideMeshes()
+            smpld_mesh_sub = mesh_divider(new_src_mesh)
+
+            save_ply(save_path, verts=new_src_mesh.verts_packed(), faces=new_src_mesh.faces_packed())
+            save_ply(save_subdivided_path, verts=smpld_mesh_sub.verts_packed(), faces=smpld_mesh_sub.faces_packed())
+
 
     def predict(self, batch, train=True):
         # set module status
@@ -206,7 +294,7 @@ class Trainer(Basic_Trainer_sdf):
         replaced_cano_normals = torch.cat((inv_body_normals, hand_feet_normals, scalp_normals), dim=1)
 
         # debug 
-        debug = True
+        debug = False
         if debug:
             replaced_points = logits.get('query_location')[0].cpu().numpy()
             replaced_normals = replaced_cano_normals[0].cpu().numpy()
@@ -349,5 +437,13 @@ if __name__ == "__main__":
         dataset = DataLoader_Buff_depth(cano_available=True, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
         trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), dataset=dataset, exp_name=exp_name)
 
-        trainer.project_fusion_shape(args.epochs, pretrained=args.pretrained, checkpoint=args.checkpoint)
+        trainer.project_fusion_shape(pretrained=args.pretrained, checkpoint=args.checkpoint)
+
+    if args.mode == 'fit_smpl':
+
+        dataset = DataLoader_Buff_depth(cano_available=True, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
+        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), dataset=dataset, exp_name=exp_name)
+
+        trainer.fit_smpl_fusion_shape(pretrained=args.pretrained, checkpoint=args.checkpoint)
+
 

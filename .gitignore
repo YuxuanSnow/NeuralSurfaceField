@@ -17,6 +17,9 @@ diffused_smpl_skinning_field/*.ply
 visualization/*
 experiments/*
 
+# vscode
+.vscode/*
+
 # Distribution / packaging
 .Python
 build/
