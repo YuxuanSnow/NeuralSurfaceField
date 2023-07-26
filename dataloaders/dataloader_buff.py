@@ -54,6 +54,9 @@ class DataLoader_Buff_depth(BaseLoader):
 
         self.num_org_points = []
 
+        if self.cano_available:
+            self.cano_points, self.cano_normals = [], []
+
         self._init_dataset()
         print('Data loaded, in total {} {} examples.\n'.format(len(self.scan_points), self.mode))
 
@@ -118,6 +121,11 @@ class DataLoader_Buff_depth(BaseLoader):
             self.path.append(file_path)
             self.num_org_points.append(num_points_input)
 
+            if self.cano_available:
+                dd_cano = np.load(file_path.split(".")[0] + "_cano." + file_path.split(".")[1], allow_pickle=True).item()
+                self.cano_points.append(torch.tensor(dd_cano['cano_points'][idx_list].transpose()).float())
+                self.cano_normals.append(torch.tensor(dd_cano['cano_normals'][idx_list].transpose()).float())
+
     def __getitem__(self, idx):
         
         return {'scan_points': self.scan_points[idx],
@@ -133,4 +141,6 @@ class DataLoader_Buff_depth(BaseLoader):
                 'trans': self.trans[idx],
                 'roty': self.roty[idx],
                 'path': self.path[idx],
-                'num_org_points': self.num_org_points[idx]}
+                'num_org_points': self.num_org_points[idx],
+                'cano_points': self.cano_points[idx],
+                'cano_normals': self.cano_normals[idx]}

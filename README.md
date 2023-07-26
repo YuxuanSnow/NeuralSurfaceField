@@ -33,6 +33,7 @@ pip install chumpy
 pip install opencv-python
 python -m pip install numpy==1.23.1
 pip install trimesh
+python -m pip install -U scikit-image
 ```
 In addition, install `kaolin` from source (https://kaolin.readthedocs.io/en/latest/notes/installation.html) and modify:
 ```

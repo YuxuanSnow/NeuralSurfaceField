@@ -1,3 +1,5 @@
+ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -54,25 +56,9 @@ class Basic_Trainer_sdf(object):
 
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
-
-        # get hand feet index of subject
-
-        file = load_ply(f=subject_ply)
-        self.smpl_mesh_ = Meshes(verts=[file[0].float()], faces=[file[1].float()]).to(device)
-
-        left_hand_vertex_index = 2005 # palm center
-        right_hand_vertex_index = 5509 # palm center
-        left_foot_vertex_index = 3392 # ankle, ~5 cm above the ground
-        right_foot_vertex_index = 6730 # ankle, ~5 cm above the ground
-
-        self.left_hand_x = self.smpl_mesh_.verts_packed()[left_hand_vertex_index, 0]
-        self.right_hand_x = self.smpl_mesh_.verts_packed()[right_hand_vertex_index, 0]
-
-        self.left_foot_y = self.smpl_mesh_.verts_packed()[left_foot_vertex_index, 1]
-        self.right_foot_y = self.smpl_mesh_.verts_packed()[right_foot_vertex_index, 1]
         
         # checkpoints for regular modules
-        self.exp_path = '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/{}/'.format(exp_name)
+        self.exp_path = ROOT_DIR + 'experiments/{}/'.format(exp_name)
         self.checkpoint_path = self.exp_path + 'checkpoints/'.format(exp_name)
         if not os.path.exists(self.checkpoint_path):
             print("mkdir:", self.checkpoint_path)
@@ -88,7 +74,7 @@ class Basic_Trainer_sdf(object):
 
     def get_pretrained_path(self):
 
-        base_path = '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/{}/'
+        base_path = ROOT_DIR + 'experiments/{}/'
 
         pretrained_conditional_sdf_path = base_path.format(self.pretrained_conditional_sdf)
         self.pretrained_conditional_sdf_checkpoint_path = pretrained_conditional_sdf_path + \
