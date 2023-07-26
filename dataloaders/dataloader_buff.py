@@ -11,7 +11,7 @@ from scipy.spatial.transform import Rotation as ScipyRot
 # Dataloader for BuFF inv skinning: process all files, without split_file;
 class DataLoader_Buff_depth(BaseLoader):
 
-    def __init__(self, mode='train', proprocessed_path=None, split_file=None, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
+    def __init__(self, mode='train', cano_available=False, proprocessed_path=None, split_file=None, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
         # num_points: each frame has different number of depth point cloud. Repeat some to get same points of sample in one batch.
 
         self.batch_size = batch_size
@@ -21,13 +21,13 @@ class DataLoader_Buff_depth(BaseLoader):
         if proprocessed_path is None and split_file is None:
             raise ValueError("proprocessed_path and split_file cannot be both None")
         
-        self.cano_available = False
+        self.cano_available = cano_available
 
         if split_file is not None:
             with open(split_file, "rb") as f:
                 self.split = pkl.load(f)
             self.data = self.split[mode]
-
+            # if no split file: performing preprocessing on all files, namely iterative root finding and projecting to fusion shape!
             self.cano_available = True
         else:
             self.data = []

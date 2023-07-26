@@ -23,7 +23,7 @@ from libs.individual_checkpoint_loader import individual_conditional_sdf_checkpo
 #                                                                                                                                                                     #
 class Basic_Trainer_sdf(object):
 
-    def __init__(self,  module_dict, pretrained_module_name_dict, device, train_dataset, val_dataset, exp_name, subject_ply='/mnt/qb/work/ponsmoll/yxue80/project/Data/CAPE/cape_release/minimal_body_shape/00032/00032_minimal.ply', optimizer='Adam'):
+    def __init__(self,  module_dict, pretrained_module_name_dict, device, train_dataset=None, val_dataset=None, exp_name=None, dataset=None, optimizer='Adam'):
         self.device = device
 
         optimization_param_list = []
@@ -56,6 +56,7 @@ class Basic_Trainer_sdf(object):
 
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
+        self.dataset = dataset
         
         # checkpoints for regular modules
         self.exp_path = ROOT_DIR + 'experiments/{}/'.format(exp_name)

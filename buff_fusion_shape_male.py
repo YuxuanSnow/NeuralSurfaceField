@@ -32,7 +32,7 @@ from pytorch3d.structures import Meshes
 class Trainer(Basic_Trainer_sdf):
     
     # test on seen subjects but unseen subject
-    def test_model(self, save_name='Recon', num_samples=-1, pretrained=None, checkpoint=None):
+    def produce_fusion_shape(self, save_name='Recon', num_samples=-1, pretrained=None, checkpoint=None):
 
         epoch = self.load_checkpoint(path=pretrained, number=checkpoint)
 
@@ -77,6 +77,54 @@ class Trainer(Basic_Trainer_sdf):
                     mesh.triangles = o3d.utility.Vector3iVector(faces)
                     o3d.io.write_triangle_mesh(os.path.join(save_folder, 'coarse_shape.ply'), mesh)
                 
+    def project_fusion_shape(self, save_name='Recon', num_samples=-1, pretrained=None, checkpoint=None):
+
+        # Don't use split file, process all files. Please refer to dataloader_buff.py
+        epoch = self.load_checkpoint(path=pretrained, number=checkpoint)
+
+        print('Projecting with epoch {}'.format(epoch))
+        file_enumerator = self.dataset.get_loader(shuffle=False)
+        device = self.device
+
+        for n, batch in enumerate(tqdm(file_enumerator)):
+
+            cano_points = batch.get('cano_points').to(device)
+            feature_cube_idx = batch.get('feature_cube_idx').to(device)
+
+            for param in subject_global_latent.parameters():
+                param.requires_grad = False
+
+            # 1st: get inverse skinning canonical points
+            x_c_coarse = cano_points.clone()
+
+            for i in range(10):
+                # 2nd: get sdf and gradient to the coarse template surface via neural field
+                query_value_sdf = subject_global_latent(x_c_coarse, feature_cube_idx) # [B, 256+3, num_points]
+                logits = {}
+                logits.update(self.conditional_sdf(query_value_sdf))  # sdf_surface, nml_surface
+                sdf_value = logits.get('sdf_surface')                     # [B, 1, N]
+                normal_value = logits.get('nml_surface')       
+
+                # 3rd: project pose-dependent canonical template onto coarse template surface
+                x_c_coarse = x_c_coarse + (-sdf_value.repeat(1, 3, 1).detach() * normal_value.detach()) # [B, 3, N]
+
+            # save the projected canonical points
+            path_batch = batch.get('path')
+            num_org_points = batch.get('num_org_points')
+            
+            for i in range(len(path_batch)):
+                
+                file_path = path_batch[i]
+                file_path_cano = file_path.split(".")[0] + "_cano." + file_path.split(".")[1]
+
+                dd = np.load(file_path_cano, allow_pickle=True).item()
+                dd.update(
+                    {"coarse_cano_points": x_c_coarse.permute(0,2,1).contiguous()[i][:num_org_points[i]].cpu().numpy()}
+                )
+
+                np.save(file_path_cano, dd)
+
+            
 
     def predict(self, batch, train=True):
         # set module status
@@ -290,16 +338,16 @@ if __name__ == "__main__":
 
         trainer.train_model(args.epochs)
 
-    if args.mode == 'val':
+    if args.mode == 'fusion_shape':
         val_dataset = DataLoader_Buff_depth(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict)  
         trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
 
-        trainer.test_model(args.save_name)
+        trainer.produce_fusion_shape(args.save_name)
 
-    if args.mode == 'generate':
+    if args.mode == 'projection':
 
-        val_dataset = DataLoader_Buff_depth(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
+        dataset = DataLoader_Buff_depth(cano_available=True, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
+        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), dataset=dataset, exp_name=exp_name)
 
-        trainer.generate(args.epochs, pretrained=args.pretrained, checkpoint=args.checkpoint)
+        trainer.project_fusion_shape(args.epochs, pretrained=args.pretrained, checkpoint=args.checkpoint)
 
