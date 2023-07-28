@@ -34,7 +34,7 @@ import open3d as o3d
 class Trainer(Basic_Trainer_sdf):
     
     # test on seen subjects but unseen subject
-    def produce_fusion_shape(self, save_name='Recon', num_samples=-1, pretrained=None, checkpoint=None):
+    def produce_fusion_shape(self, save_name='Recon_256', num_samples=-1, pretrained=None, checkpoint=None):
 
         epoch = self.load_checkpoint(path=pretrained, number=checkpoint)
 
@@ -58,17 +58,15 @@ class Trainer(Basic_Trainer_sdf):
                 bbox_min = np.stack([-1.5, -1.5, -1.5], 0).astype(np.float32)
                 bbox_max = np.stack([1.5, 1.5, 1.5], 0).astype(np.float32)
 
-                verts, faces, normals, values = condition_reconstruction(self.conditional_sdf, device, feature, resolution=256, thresh=0.00001, b_min=bbox_min, b_max=bbox_max, texture_net=None)
+                verts, faces, normals, values = condition_reconstruction(self.conditional_sdf, device, feature, resolution=int(save_name.split('_')[1]), thresh=0.00001, b_min=bbox_min, b_max=bbox_max, texture_net=None)
 
                 names = batch.get('path')
 
                 for i in range(len(names)):
                     file_path = names[i]
-                    subject = file_path.split('/')[12]
-                    name = split(file_path)[1]
-                    front_or_back = file_path.split('/')[-6]
-                    # dataset = split(split(file_path)[0])[1]
-                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, front_or_back, name.split('.')[0])
+                    subject = file_path.split('/')[9] # if local 9; if cluster 12
+                    garment = split(file_path)[1].split('_')[0]
+                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
 
                     if not os.path.exists(save_folder):
                         os.makedirs(save_folder)
@@ -113,7 +111,32 @@ class Trainer(Basic_Trainer_sdf):
             # save the projected canonical points
             path_batch = batch.get('path')
             num_org_points = batch.get('num_org_points')
-            
+
+            # debug 
+            debug = True
+            if debug:
+                import open3d as o3d
+
+                # write function which uses open3d to write point cloud
+                def write_pcd(path, points):
+                    pcd = o3d.geometry.PointCloud()
+                    pcd.points = o3d.utility.Vector3dVector(points)
+                    o3d.io.write_point_cloud(path, pcd)
+
+                names = batch.get('path')
+                file_path = names[0]
+                subject = file_path.split('/')[9] # if local 9; if cluster 12
+                garment = split(file_path)[1].split('_')[0]
+                save_folder = join(self.exp_path, 'debug_projection', subject, garment)
+
+                if not os.path.exists(save_folder):
+                    os.makedirs(save_folder)
+
+                path_cano = os.path.join(save_folder, 'cano_corr_{}.ply'.format(names[0].split('/')[-1]))
+
+                # write cano point cloud
+                write_pcd(path_cano, x_c_coarse[0].permute(1,0).contiguous().cpu().numpy())
+                
             for i in range(len(path_batch)):
                 
                 file_path = path_batch[i]
@@ -141,9 +164,9 @@ class Trainer(Basic_Trainer_sdf):
         self.set_module_training_mode(train_flag=False)
         self.set_feat_training_mode(train_flag=False)
 
-        for subj_gar in self.dataset.subject_index_dict.keys():
+        for subj_gar in self.val_dataset.subject_index_dict.keys():
 
-            subj_gar_idx = self.dataset.subject_index_dict.get(subj_gar)
+            subj_gar_idx = self.val_dataset.subject_index_dict.get(subj_gar)
             
             # smpl mesh of minimal shape
             smpl_verts = self.diffused_skinning_field.smpl_ref_verts.to(self.device)[subj_gar_idx]
@@ -154,7 +177,7 @@ class Trainer(Basic_Trainer_sdf):
             optimizer = torch.optim.SGD([deform_verts], lr=1.0, momentum=0.9)
 
             # Number of optimization steps
-            Niter = 500
+            Niter = 1000
             # Weight for the sdf loss
             w_sdf = 1
             # Weight for mesh edge loss
@@ -204,15 +227,19 @@ class Trainer(Basic_Trainer_sdf):
                 loss.backward()
                 optimizer.step()
 
-            save_path = ROOT_DIR + 'BuFF/Fusion_shape/smpl_D_' + subj_gar + '.ply'
-            save_subdivided_path = ROOT_DIR + 'BuFF/Fusion_shape/smpl_D_' + subj_gar + '_subdivided.ply'å
+            fusion_shape_save_dir = ROOT_DIR + 'Data/BuFF/Fusion_shape/'
+
+            if not os.path.exists(fusion_shape_save_dir):
+                os.makedirs(fusion_shape_save_dir)
+
+            save_path = fusion_shape_save_dir + 'smpl_D_' + subj_gar + '.ply'
+            save_subdivided_path = fusion_shape_save_dir + 'smpl_D_' + subj_gar + '_subdivided.ply'
 
             mesh_divider = SubdivideMeshes()
             smpld_mesh_sub = mesh_divider(new_src_mesh)
 
             save_ply(save_path, verts=new_src_mesh.verts_packed(), faces=new_src_mesh.faces_packed())
             save_ply(save_subdivided_path, verts=smpld_mesh_sub.verts_packed(), faces=smpld_mesh_sub.faces_packed())
-
 
     def predict(self, batch, train=True):
         # set module status
@@ -308,7 +335,16 @@ class Trainer(Basic_Trainer_sdf):
                 pcd.normals = o3d.utility.Vector3dVector(normals)
                 o3d.io.write_point_cloud(path, pcd)
 
-            path_cano = '/home/yuxuan/project/NeuralSurfaceField/visualization/cano_replaced.ply'
+            names = batch.get('path')
+            file_path = names[0]
+            subject = file_path.split('/')[9] # if local 9; if cluster 12
+            garment = split(file_path)[1].split('_')[0]
+            save_folder = join(self.exp_path, 'debug_inv_skinning', subject, garment)
+
+            if not os.path.exists(save_folder):
+                os.makedirs(save_folder)
+
+            path_cano = os.path.join(save_folder, 'cano_corr_{}.ply'.format(names[0].split('/')[-1]))
 
             # write cano point cloud
             write_pcd(path_cano, replaced_points, replaced_normals)
@@ -346,21 +382,21 @@ if __name__ == "__main__":
     parser.add_argument('-pretrained_exp', '--pretrained_exp', type=str)
     parser.add_argument('-batch_size', '--batch_size', default=8, type=int)
     parser.add_argument('-split_file', '--split_file', type=str)
-    parser.add_argument('-epochs', default=10000, type=int)
+    parser.add_argument('-epochs', '--epochs', default=300, type=int)
     # val, ft, pose_track, animate, detail_recon
     parser.add_argument('-mode', '--mode', default='train', type=str)
-    parser.add_argument('-save_name', '--save_name', default='Recon_256_', type=str)
+    parser.add_argument('-save_name', '--save_name', default='Recon_512', type=str)
 
     args = parser.parse_args()
 
     args.subject_paths = [
-        '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.exp_id),
-        '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.exp_id)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.exp_id),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.exp_id)
     ]
 
     args.pretrained_feature_exp_path = [
-        '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.pretrained_exp),
-        '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.pretrained_exp)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.pretrained_exp),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.pretrained_exp)
     ]
 
     args.num_subjects = len(args.subject_paths)
@@ -434,16 +470,19 @@ if __name__ == "__main__":
 
     if args.mode == 'projection':
 
-        dataset = DataLoader_Buff_depth(cano_available=True, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
+        # preprocessed path 
+        preprocessed_buff_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/sequences'
+
+        dataset = DataLoader_Buff_depth(cano_available=True, proprocessed_path=preprocessed_buff_path, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
         trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), dataset=dataset, exp_name=exp_name)
 
-        trainer.project_fusion_shape(pretrained=args.pretrained, checkpoint=args.checkpoint)
+        trainer.project_fusion_shape()
 
     if args.mode == 'fit_smpl':
 
-        dataset = DataLoader_Buff_depth(cano_available=True, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), dataset=dataset, exp_name=exp_name)
+        val_dataset = DataLoader_Buff_depth(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict)  
+        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
 
-        trainer.fit_smpl_fusion_shape(pretrained=args.pretrained, checkpoint=args.checkpoint)
+        trainer.fit_smpl_fusion_shape()
 
 

@@ -18,7 +18,7 @@ class DataLoader_Buff_depth(BaseLoader):
         self.num_workers = num_workers
         self.mode = mode
 
-        if proprocessed_path is None and split_file is None:
+        if proprocessed_path is None and split_file is None and cano_available is False:
             raise ValueError("proprocessed_path and split_file cannot be both None")
         
         self.cano_available = cano_available

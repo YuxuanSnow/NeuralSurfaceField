@@ -11,12 +11,14 @@ def train_val_data_split(train_subject, data_path, save_loc):
 
     data = {'train': [], 'val': []}
 
-    subject_available_frames = []
+    train_frames = []
+    val_frames = []
 
     for subject_idx in train_subject:
 
         sequences_path = data_path + 'sequences/' + str(subject_idx)
-        print(sequences_path)
+        
+        subject_available_frames = []
 
         for action in os.listdir(sequences_path):
             action_path = os.path.join(sequences_path, action)
@@ -33,13 +35,16 @@ def train_val_data_split(train_subject, data_path, save_loc):
                             
                 subject_available_frames.append(frame_npy_path)
 
-    print(len(subject_available_frames))
-    random.shuffle(subject_available_frames)
-    subject_available_frames = subject_available_frames[::2]
-    count = int(len(subject_available_frames)*0.9)
+            print(len(subject_available_frames))
+            random.shuffle(subject_available_frames)
+            subject_available_frames = subject_available_frames[::2]
+            count = int(len(subject_available_frames)*0.9)
 
-    data['train'] = subject_available_frames[:count]
-    data['val'] = subject_available_frames[count:]
+            train_frames.extend(subject_available_frames[:count])
+            val_frames.extend(subject_available_frames[count:])
+
+    data['train'] = train_frames
+    data['val'] = val_frames
 
     print('train={}, val={}'.format(len(data['train']), len(data['val'])))
 
