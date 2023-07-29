@@ -16,6 +16,8 @@ diffused_smpl_skinning_field/*.npy
 diffused_smpl_skinning_field/*.ply
 visualization/*
 experiments/*
+Data_female/*
+assets/data_split/*
 
 # vscode
 .vscode/*
