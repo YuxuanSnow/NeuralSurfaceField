@@ -33,6 +33,9 @@ def buff_preprocessing_depth_rot_trans(subject_gender, subject_action_frame_ply,
     # sequence frame in npz
     textured_mesh = o3d.io.read_triangle_mesh(subject_action_frame_ply, True)
     subject_action_frame_cape_npz = subject_action_frame_ply.replace('.ply', '.npz')
+    if not os.path.exists(subject_action_frame_cape_npz):
+        print("No npz file for this frame, skip")
+        return -1
     frame_npz_loaded = np.load(subject_action_frame_cape_npz)
 
     # load posed and shaped naked smpl mesh, load theta, betas, trans, and centralize it
@@ -216,7 +219,7 @@ if __name__ == "__main__":
     
     if args.version == 'depth_rot_trans':
         if args.rot == 'const':
-            save_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
+            save_path = ROOT_DIR + 'Data_new/BuFF/buff_release_rot_const/'
             print("Preprocessing depth with constent rot view around y axis")
         else:
             assert(False)
@@ -293,7 +296,7 @@ if __name__ == "__main__":
     cut_offset = 0.03
 
     from pytorch3d.io import load_ply
-    file = load_ply(f=DATA_DIR+'BuFF/buff_release/minimal_body_shape/'+args.seq+'/'+args.seq+'_minimal.ply')
+    file = load_ply(f=DATA_DIR+'BuFF/buff_release/minimal_body_shape/'+args.seq+'/'+args.seq+'_minimal_cape.ply')
     subject_mesh = Meshes(verts=[file[0].float()], faces=[file[1].float()]).cuda()
     smpl_vertices = subject_mesh.verts_packed()
 
@@ -328,7 +331,7 @@ if __name__ == "__main__":
             
             if ply_file_name.endswith('.ply'):
                 frame_texture_mesh_path = os.path.join(action_path, ply_file_name)
-                shape_pkl_path = buff_path + 'minimal_body_shape/' + str(subject_idx) + '/' + str(subject_idx) + '_param.pkl'
+                shape_pkl_path = buff_path + 'minimal_body_shape/' + str(subject_idx) + '/' + str(subject_idx) + '_param_cape.pkl'
                 save_name = os.path.split(ply_file_name)[1].split('.')[0] + '_' + os.path.split(ply_file_name)[1].split('.')[1] + '.npy'
                 
                 if not os.path.exists(save_action_path):

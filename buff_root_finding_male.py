@@ -67,7 +67,9 @@ if __name__ == "__main__":
 
     subject_index_dict = {}
     subject_index_dict.update({"00032_shortlong": 0,
-                               "00096_shortlong": 1})
+                               "00032_shortshort": 1,
+                               "00096_shortlong": 2,
+                               "00096_shortshort": 3})
 
     # multi subj query: for one subject with different garments, only use one skinning field
     general_subject_index = {}

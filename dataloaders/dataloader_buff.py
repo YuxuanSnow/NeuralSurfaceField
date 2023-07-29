@@ -127,20 +127,38 @@ class DataLoader_Buff_depth(BaseLoader):
                 self.cano_normals.append(torch.tensor(dd_cano['cano_normals'][idx_list].transpose()).float())
 
     def __getitem__(self, idx):
+
+        if self.cano_available:
         
-        return {'scan_points': self.scan_points[idx],
-                'scan_normals': self.scan_normals[idx],
-                'scan_colors': self.scan_colors[idx],
-                'scan_points_rotated': self.scan_points_rotated[idx],
-                'scan_normals_rotated': self.scan_normals_rotated[idx],
-                'pose': self.pose[idx],
-                'betas': self.betas[idx],
-                'ref_shaped_points': self.ref_shaped_points[idx],
-                'feature_cube_idx': self.feature_cube_idx[idx],
-                'skinning_weights': self.skinning_weights[idx],
-                'trans': self.trans[idx],
-                'roty': self.roty[idx],
-                'path': self.path[idx],
-                'num_org_points': self.num_org_points[idx],
-                'cano_points': self.cano_points[idx],
-                'cano_normals': self.cano_normals[idx]}
+            return {'scan_points': self.scan_points[idx],
+                    'scan_normals': self.scan_normals[idx],
+                    'scan_colors': self.scan_colors[idx],
+                    'scan_points_rotated': self.scan_points_rotated[idx],
+                    'scan_normals_rotated': self.scan_normals_rotated[idx],
+                    'pose': self.pose[idx],
+                    'betas': self.betas[idx],
+                    'ref_shaped_points': self.ref_shaped_points[idx],
+                    'feature_cube_idx': self.feature_cube_idx[idx],
+                    'skinning_weights': self.skinning_weights[idx],
+                    'trans': self.trans[idx],
+                    'roty': self.roty[idx],
+                    'path': self.path[idx],
+                    'num_org_points': self.num_org_points[idx],
+                    'cano_points': self.cano_points[idx],
+                    'cano_normals': self.cano_normals[idx]}
+        else:
+
+            return {'scan_points': self.scan_points[idx],
+                    'scan_normals': self.scan_normals[idx],
+                    'scan_colors': self.scan_colors[idx],
+                    'scan_points_rotated': self.scan_points_rotated[idx],
+                    'scan_normals_rotated': self.scan_normals_rotated[idx],
+                    'pose': self.pose[idx],
+                    'betas': self.betas[idx],
+                    'ref_shaped_points': self.ref_shaped_points[idx],
+                    'feature_cube_idx': self.feature_cube_idx[idx],
+                    'skinning_weights': self.skinning_weights[idx],
+                    'trans': self.trans[idx],
+                    'roty': self.roty[idx],
+                    'path': self.path[idx],
+                    'num_org_points': self.num_org_points[idx]}

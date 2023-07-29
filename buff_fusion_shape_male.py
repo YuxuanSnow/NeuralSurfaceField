@@ -25,6 +25,7 @@ from trainer.data_parallel import MyDataParallel
 
 from trainer.basic_trainer_sdf import Basic_Trainer_sdf
 from libs.sample import compute_smaple_on_body_mask_w_batch
+from libs.barycentric_corr_finding import point_to_mesh_distance, face_vertices
 
 from pytorch3d.ops import sample_points_from_meshes
 from pytorch3d.structures import Meshes
@@ -113,7 +114,7 @@ class Trainer(Basic_Trainer_sdf):
             num_org_points = batch.get('num_org_points')
 
             # debug 
-            debug = True
+            debug = False
             if debug:
                 import open3d as o3d
 
@@ -281,6 +282,12 @@ class Trainer(Basic_Trainer_sdf):
 
         replaced_cano_pts = torch.cat((on_body_points, on_hand_feet_points, on_scalp_points), dim=1)
 
+        # find closest face index from points to dense smpl mesh: filter outlier points; Won't affect saved preprocessed canonical points
+        face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
+        residues, pts_ind, _ = point_to_mesh_distance(replaced_cano_pts, face_verts_loc)
+        valid_mask = residues<0.05
+        replaced_cano_pts = replaced_cano_pts[valid_mask][None]
+
         query_value = self.subject_global_latent(replaced_cano_pts.permute(0, 2, 1), subject_garment_id) # [B, 256+3, num_points]
 
         logits.update(self.conditional_sdf(query_value))  # sdf_surface, nml_surface
@@ -289,6 +296,7 @@ class Trainer(Basic_Trainer_sdf):
         logits.update({'scalp_normals': smpl_normals[:, on_scalp_mask[0]]})  # [B, N, 3]
         logits.update({'query_location': replaced_cano_pts})
         logits.update({'on_body_mask': on_body_mask})  # [B, N]
+        logits.update({'near_smpl_mask': valid_mask})  # [B, N]
 
         return logits
 
@@ -319,6 +327,7 @@ class Trainer(Basic_Trainer_sdf):
         inv_body_normals = inv_posed_normals_[:, on_body_mask[0]]
 
         replaced_cano_normals = torch.cat((inv_body_normals, hand_feet_normals, scalp_normals), dim=1)
+        replaced_cano_normals = replaced_cano_normals[logits['near_smpl_mask']][None]
 
         # debug 
         debug = False
@@ -385,25 +394,31 @@ if __name__ == "__main__":
     parser.add_argument('-epochs', '--epochs', default=300, type=int)
     # val, ft, pose_track, animate, detail_recon
     parser.add_argument('-mode', '--mode', default='train', type=str)
-    parser.add_argument('-save_name', '--save_name', default='Recon_512', type=str)
+    parser.add_argument('-save_name', '--save_name', default='Recon_256', type=str)
 
     args = parser.parse_args()
 
     args.subject_paths = [
         ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.exp_id),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.exp_id)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortshort'.format(args.exp_id),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.exp_id),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortshort'.format(args.exp_id)
     ]
 
     args.pretrained_feature_exp_path = [
         ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.pretrained_exp),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.pretrained_exp)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortshort'.format(args.pretrained_exp),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.pretrained_exp),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortshort'.format(args.pretrained_exp)
     ]
 
     args.num_subjects = len(args.subject_paths)
 
     subject_index_dict = {}
     subject_index_dict.update({"00032_shortlong": 0,
-                               "00096_shortlong": 1})
+                               "00032_shortshort": 1,
+                               "00096_shortlong": 2,
+                               "00096_shortshort": 3})
 
     # multi subj query: for one subject with different garments, only use one skinning field
     general_subject_index = {}
