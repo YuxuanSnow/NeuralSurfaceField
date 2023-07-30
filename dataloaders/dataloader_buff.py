@@ -11,7 +11,7 @@ from scipy.spatial.transform import Rotation as ScipyRot
 # Dataloader for BuFF inv skinning: process all files, without split_file;
 class DataLoader_Buff_depth(BaseLoader):
 
-    def __init__(self, mode='train', cano_available=False, proprocessed_path=None, split_file=None, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
+    def __init__(self, mode='train', nsf_cano_available=False, cano_available=False, proprocessed_path=None, split_file=None, batch_size=64, num_workers=12, subject_index_dict=None, num_points=30000):  
         # num_points: each frame has different number of depth point cloud. Repeat some to get same points of sample in one batch.
 
         self.batch_size = batch_size
@@ -22,6 +22,7 @@ class DataLoader_Buff_depth(BaseLoader):
             raise ValueError("proprocessed_path and split_file cannot be both None")
         
         self.cano_available = cano_available
+        self.nsf_cano_available = nsf_cano_available
 
         if split_file is not None:
             with open(split_file, "rb") as f:
@@ -54,8 +55,11 @@ class DataLoader_Buff_depth(BaseLoader):
 
         self.num_org_points = []
 
-        if self.cano_available:
+        if self.cano_available and not self.nsf_cano_available:
             self.cano_points, self.cano_normals = [], []
+
+        if self.nsf_cano_available:
+            self.cano_points, self.cano_normals, self.coarse_cano_points = [], [], []
 
         self._init_dataset()
         print('Data loaded, in total {} {} examples.\n'.format(len(self.scan_points), self.mode))
@@ -121,15 +125,20 @@ class DataLoader_Buff_depth(BaseLoader):
             self.path.append(file_path)
             self.num_org_points.append(num_points_input)
 
-            if self.cano_available:
+            if self.cano_available and not self.nsf_cano_available:
                 dd_cano = np.load(file_path.split(".")[0] + "_cano." + file_path.split(".")[1], allow_pickle=True).item()
                 self.cano_points.append(torch.tensor(dd_cano['cano_points'][idx_list].transpose()).float())
                 self.cano_normals.append(torch.tensor(dd_cano['cano_normals'][idx_list].transpose()).float())
 
+            if self.nsf_cano_available:
+                dd_cano = np.load(file_path.split(".")[0] + "_cano." + file_path.split(".")[1], allow_pickle=True).item()
+                self.cano_points.append(torch.tensor(dd_cano['cano_points'][idx_list].transpose()).float())
+                self.cano_normals.append(torch.tensor(dd_cano['cano_normals'][idx_list].transpose()).float())
+                self.coarse_cano_points.append(torch.tensor(dd_cano['coarse_cano_points'][idx_list].transpose()).float())
+
     def __getitem__(self, idx):
 
-        if self.cano_available:
-        
+        if self.cano_available and not self.nsf_cano_available:
             return {'scan_points': self.scan_points[idx],
                     'scan_normals': self.scan_normals[idx],
                     'scan_colors': self.scan_colors[idx],
@@ -146,8 +155,26 @@ class DataLoader_Buff_depth(BaseLoader):
                     'num_org_points': self.num_org_points[idx],
                     'cano_points': self.cano_points[idx],
                     'cano_normals': self.cano_normals[idx]}
+        
+        elif self.nsf_cano_available:
+            return {'scan_points': self.scan_points[idx],
+                    'scan_normals': self.scan_normals[idx],
+                    'scan_colors': self.scan_colors[idx],
+                    'scan_points_rotated': self.scan_points_rotated[idx],
+                    'scan_normals_rotated': self.scan_normals_rotated[idx],
+                    'pose': self.pose[idx],
+                    'betas': self.betas[idx],
+                    'ref_shaped_points': self.ref_shaped_points[idx],
+                    'feature_cube_idx': self.feature_cube_idx[idx],
+                    'skinning_weights': self.skinning_weights[idx],
+                    'trans': self.trans[idx],
+                    'roty': self.roty[idx],
+                    'path': self.path[idx],
+                    'num_org_points': self.num_org_points[idx],
+                    'cano_points': self.cano_points[idx],
+                    'cano_normals': self.cano_normals[idx],
+                    'coarse_cano_points': self.coarse_cano_points[idx]}
         else:
-
             return {'scan_points': self.scan_points[idx],
                     'scan_normals': self.scan_normals[idx],
                     'scan_colors': self.scan_colors[idx],
