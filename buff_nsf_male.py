@@ -161,23 +161,6 @@ class Trainer(Basic_Trainer_nsf):
         fine_cano_offset, fine_cano_normals = geometry_manifold_neural_field(feat_pose_loc, self.nsf_decoder)
         fine_cano_points = x_c_coarse + fine_cano_offset
 
-        '''
-        replace_hand_foot = False
-        avoid_large_displacement = False
-
-        if replace_hand_foot:
-            # get on hand and foot vertex under subdivided SMPL mesh topology 
-            # replace hand
-            body_loc = self.diffused_skinning_field.subject_body_loc[subject_garment_id]
-            smpl_hand_mask, smpl_feet_mask, _ = compute_smaple_on_body_mask_w_batch(x_c_coarse, cut_offset=0.00, subject_loc=body_loc)
-            on_hand_feet_mask = torch.logical_or(smpl_hand_mask, smpl_feet_mask)
-            fine_cano_points.permute(0,2,1)[on_hand_feet_mask] = x_c_coarse.permute(0,2,1)[on_hand_feet_mask]
-        if avoid_large_displacement:
-            # ignore too large displacement
-            invalid_mask = fine_cano_offset > 0.05
-            fine_cano_points[invalid_mask] = x_c_coarse[invalid_mask]
-        '''
-
         posed_cloth_points, posed_cloth_normals = reposing_cano_points_fix_skinning(x_c_coarse, fine_cano_points, fine_cano_normals, pose, trans, subject_garment_id, self.diffused_skinning_field, skinner, skinner_normal, skinning_weights=skinning_weights)
         
         logits.update({ 'cano_cloth_displacements': fine_cano_offset,
@@ -365,17 +348,3 @@ if __name__ == "__main__":
 
         trainer.test_model(args.save_name)
 
-    if args.mode == 'fine_tune':
-        val_dataset = DataLoader_Buff_depth_male_mask(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
-
-        trainer.fine_tune_model(args.epochs, pretrained=args.pretrained, checkpoint=args.checkpoint)
-
-    if args.mode == 'animate':
-
-        val_dataset = DataLoader_Buff_depth_male_mask(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
-
-        trainer.animate_model(args.save_name, args.num_samples, pretrained=args.pretrained, checkpoint=args.checkpoint)
-
-    

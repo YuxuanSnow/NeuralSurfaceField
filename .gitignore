@@ -18,6 +18,8 @@ visualization/*
 experiments/*
 Data_female/*
 assets/data_split/*
+*.sh
+cluster/*
 
 # vscode
 .vscode/*
