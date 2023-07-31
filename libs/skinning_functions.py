@@ -109,7 +109,7 @@ class SkinModel(nn.Module):
 class InvSkinModel(nn.Module):
     def __init__(self, gender='male'):
             super(InvSkinModel, self).__init__()
-            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT_DIR+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
@@ -194,7 +194,7 @@ class SkinModel_RotationOnly(nn.Module):
     # rotation only skinning
     def __init__(self, gender='male'):
             super(SkinModel_RotationOnly, self).__init__()
-            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT_DIR+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
@@ -261,7 +261,7 @@ class InvSkinModel_RotationOnly(nn.Module):
     # rotation only skinning
     def __init__(self, gender='male'):
             super(InvSkinModel_RotationOnly, self).__init__()
-            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT_DIR+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None
