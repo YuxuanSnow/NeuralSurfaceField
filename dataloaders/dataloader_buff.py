@@ -1,4 +1,4 @@
-from libs.global_variable import position
+from libs.global_variable import position, ROOT_DIR
 
 from os.path import split, join
 import pickle as pkl
@@ -90,7 +90,9 @@ class DataLoader_Buff_depth(BaseLoader):
 
         print('Loading {} data...'.format(self.mode))
 
-        for idx, file_path in enumerate(tqdm(self.data)):
+        for idx, file_path_ in enumerate(tqdm(self.data)):
+            file_path = join(ROOT_DIR, file_path_)
+
             dd = np.load(file_path, allow_pickle=True).item()
 
             subject = split(file_path)[0].split('/')[position][:5]                     # if local workstaiton then 9; if cluster then 12

@@ -32,8 +32,8 @@ def train_val_data_split(train_subject, data_path, save_loc):
                 if not os.path.exists(frame_npy_path):
                     print('files missing of', subject_idx, " ", npy_file_name)
                     continue
-                            
-                subject_available_frames.append(frame_npy_path)
+                frame_relative_path = os.path.relpath(frame_npy_path, ROOT_DIR)
+                subject_available_frames.append(frame_relative_path)
 
             print(len(subject_available_frames))
             random.shuffle(subject_available_frames)
