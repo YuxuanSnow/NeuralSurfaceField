@@ -1,5 +1,4 @@
-DATA_DIR = '/home/yuxuan/project/NeuralSurfaceField/Data_scan/'
-ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+from libs.global_variable import ROOT_DIR, DATA_DIR
 
 import sys
 sys.path.append(ROOT_DIR) 

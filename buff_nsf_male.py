@@ -1,4 +1,4 @@
-ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+from libs.global_variable import ROOT_DIR, position
 
 # coarse template via inverse skinning of scan using SMPL skinning weights
 import torch
@@ -91,7 +91,7 @@ class Trainer(Basic_Trainer_nsf):
 
                 for i in range(len(names)):
                     file_path = names[i]
-                    subject = file_path.split('/')[9] # if local 9; if cluster 12
+                    subject = file_path.split('/')[position] # if local 9; if cluster 12
                     garment = split(file_path)[1].split('_')[0]
                     save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
 

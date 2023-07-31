@@ -1,4 +1,4 @@
-ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+from libs.global_variable import ROOT_DIR
 
 import torch
 from torch import nn

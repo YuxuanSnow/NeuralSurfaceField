@@ -1,4 +1,4 @@
-ROOT_DIR = '/home/yuxuan/project/NeuralSurfaceField/'
+from libs.global_variable import ROOT_DIR
 
 # find pose-dependent canonical correspondence via inverse skinning
 import torch

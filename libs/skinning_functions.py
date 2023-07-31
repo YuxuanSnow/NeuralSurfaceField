@@ -6,13 +6,13 @@ import numpy as np
 from libs.serialization import ready_arguments
 from libs.smplpytorch import (th_posemap_axisang, th_with_zeros, th_pack, make_list, subtract_flat_id)
 
-ROOT = '/home/yuxuan/project/NeuralSurfaceField'
+from libs.global_variable import ROOT_DIR
 
 # Forward Skiningg & Inverse Skining model with translation (for points) or not (for rotation)
 class SkinModel(nn.Module):
     def __init__(self, gender='male'):
             super(SkinModel, self).__init__()
-            self.load_smpl_skeleton(model_root= ROOT+'/smpl_model', gender=gender)
+            self.load_smpl_skeleton(model_root= ROOT_DIR+'/smpl_model', gender=gender)
 
     def load_smpl_skeleton(self, model_root, gender):
         model_path = None

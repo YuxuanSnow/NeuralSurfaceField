@@ -9,8 +9,8 @@ from libs.geometry import get_hres
 import scipy.sparse as sp
 
 ## Set your paths here
-ROOT = '/mnt/qb/work/ponsmoll/yxue80/project/shapefusion/smpl_models'
-smpl_vt_ft_path = join(ROOT, 'smpl_vt_ft.pkl')
+from libs.global_variable import ROOT_DIR
+smpl_vt_ft_path = join(ROOT_DIR, 'smpl_vt_ft.pkl')
 
 class SmplPaths:
     def __init__(self, gender='neutral'):
@@ -18,15 +18,15 @@ class SmplPaths:
 
     def get_smpl_file(self):
         if self.gender == 'neutral':
-            return join(ROOT,
+            return join(ROOT_DIR,
                         'basicmodel_neutral_lbs_10_207_0_v1.1.0.pkl')
 
         elif self.gender == 'male':
-            return join(ROOT,
+            return join(ROOT_DIR,
                              'basicmodel_m_lbs_10_207_0_v1.1.0.pkl')
 
         elif self.gender == 'female':
-            return join(ROOT,
+            return join(ROOT_DIR,
                              'basicmodel_f_lbs_10_207_0_v1.1.0.pkl')
 
         else:
@@ -88,7 +88,7 @@ class SmplPaths:
 
     @staticmethod
     def get_template_file():
-        fname = join(ROOT, 'template', 'template.obj')
+        fname = join(ROOT_DIR, 'template', 'template.obj')
         return fname
 
     @staticmethod
@@ -98,27 +98,27 @@ class SmplPaths:
 
     @staticmethod
     def get_faces():
-        fname = join(ROOT, 'template', 'faces.npy')
+        fname = join(ROOT_DIR, 'template', 'faces.npy')
         return np.load(fname)
 
     @staticmethod
     def get_bmap():
-        fname = join(ROOT, 'template', 'bmap.npy')
+        fname = join(ROOT_DIR, 'template', 'bmap.npy')
         return np.load(fname)
 
     @staticmethod
     def get_fmap():
-        fname = join(ROOT, 'template', 'fmap.npy')
+        fname = join(ROOT_DIR, 'template', 'fmap.npy')
         return np.load(fname)
 
     @staticmethod
     def get_bmap_hres():
-        fname = join(ROOT, 'template', 'bmap_hres.npy')
+        fname = join(ROOT_DIR, 'template', 'bmap_hres.npy')
         return np.load(fname)
 
     @staticmethod
     def get_fmap_hres():
-        fname = join(ROOT, 'template', 'fmap_hres.npy')
+        fname = join(ROOT_DIR, 'template', 'fmap_hres.npy')
         return np.load(fname)
 
     @staticmethod

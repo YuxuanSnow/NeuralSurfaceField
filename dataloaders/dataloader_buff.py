@@ -1,3 +1,5 @@
+from libs.global_variable import position
+
 from os.path import split, join
 import pickle as pkl
 import numpy as np
@@ -91,7 +93,7 @@ class DataLoader_Buff_depth(BaseLoader):
         for idx, file_path in enumerate(tqdm(self.data)):
             dd = np.load(file_path, allow_pickle=True).item()
 
-            subject = split(file_path)[0].split('/')[9][:5]                     # if local workstaiton then 9; if cluster then 12
+            subject = split(file_path)[0].split('/')[position][:5]                     # if local workstaiton then 9; if cluster then 12
             garment = split(file_path)[0].split('/')[10].split('_')[0]
             subject_garment = subject + "_" + garment
             subject_garment_idx = self.subject_index_dict[subject_garment]
