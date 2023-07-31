@@ -1,3 +1,5 @@
+import sys
+sys.path.append('..')
 from libs.global_variable import ROOT_DIR
 
 import os

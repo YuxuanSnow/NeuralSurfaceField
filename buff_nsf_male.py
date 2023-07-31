@@ -25,7 +25,7 @@ import os
 
 from trainer.data_parallel import MyDataParallel
 
-from visualization.write_pcd import write_pcd
+# from visualization.write_pcd import write_pcd
 
 from trainer.basic_trainer_nsf import Basic_Trainer_nsf
 from libs.sample import compute_smaple_on_body_mask_w_batch
