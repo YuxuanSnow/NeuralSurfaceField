@@ -31,7 +31,7 @@ from libs.barycentric_corr_finding import point_to_mesh_distance, face_vertices
 from pytorch3d.ops import sample_points_from_meshes
 from pytorch3d.structures import Meshes
 
-import open3d as o3d
+# import open3d as o3d
 
 class Trainer(Basic_Trainer_sdf):
     
@@ -286,7 +286,7 @@ class Trainer(Basic_Trainer_sdf):
         # find closest face index from points to dense smpl mesh: filter outlier points; Won't affect saved preprocessed canonical points
         face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
         residues, pts_ind, _ = point_to_mesh_distance(replaced_cano_pts, face_verts_loc)
-        valid_mask = residues<0.05
+        valid_mask = residues<0.03
         replaced_cano_pts = replaced_cano_pts[valid_mask][None]
 
         query_value = self.subject_global_latent(replaced_cano_pts.permute(0, 2, 1), subject_garment_id) # [B, 256+3, num_points]
@@ -336,7 +336,7 @@ class Trainer(Basic_Trainer_sdf):
             replaced_points = logits.get('query_location')[0].cpu().numpy()
             replaced_normals = replaced_cano_normals[0].cpu().numpy()
 
-            import open3d as o3d
+            # import open3d as o3d
 
             # write function which uses open3d to write point cloud
             def write_pcd(path, points, normals):
