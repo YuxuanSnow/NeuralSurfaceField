@@ -84,6 +84,10 @@ python buff_preprocessing.py
 ## Running
 ### Learn Fusion Shape via SDF
 #### 1. Canonicalize Input Partial Shape
+canonicalize input partial shape by root finding, save to preprocessed file.
+```
+python buff_root_finding_male.py
+```
 
 #### 2. Learn Canonical Fusion Shape
 

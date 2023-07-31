@@ -60,8 +60,8 @@ class Basic_Trainer_nsf(object):
             self.optimizer = optim.Adam(optimization_param_list, lr=1e-4)
             self.feat_optimizer = optim.Adam(feat_param_list, lr=1e-4)
 
-            self.scheduler = StepLR(self.optimizer, step_size = 500, gamma = 0.5)
-            self.feat_scheduler = StepLR(self.feat_optimizer, step_size = 500, gamma = 0.5)
+            self.scheduler = StepLR(self.optimizer, step_size = 100, gamma = 0.5)
+            self.feat_scheduler = StepLR(self.feat_optimizer, step_size = 100, gamma = 0.5)
 
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -102,7 +102,10 @@ class Basic_Trainer_nsf(object):
         path = self.checkpoint_path + 'checkpoint_epoch_{}.tar'.format(epoch)
         if not os.path.exists(path):
             model_weights = {'epoch': epoch,
-                             'optimizer_state_dict': self.optimizer.state_dict()}
+                             'optimizer_state_dict': self.optimizer.state_dict(), 
+                            'scheduler_state_dict': self.scheduler.state_dict(),
+                            'feat_optimizer_state_dict': self.feat_optimizer.state_dict(),
+                            'feat_scheduler_state_dict': self.feat_scheduler.state_dict()}
             if self.pose_encoder is not None:
                 model_weights.update(
                     {'pose_encoder_state_dict': self.pose_encoder.state_dict()})
@@ -112,50 +115,53 @@ class Basic_Trainer_nsf(object):
             torch.save(model_weights, path)
 
     def load_checkpoint(self, number=None, path=None):
-        if path is not None:
-            print('Loaded checkpoint from: {}'.format(path))
-            checkpoint = torch.load(path)
-            if self.pose_encoder is not None:
-                self.pose_encoder.load_state_dict(checkpoint['pose_encoder_state_dict'])
-            if self.nsf_decoder is not None:
-                self.nsf_decoder.load_state_dict(checkpoint['nsf_decoder_state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            epoch = checkpoint['epoch']
+
+        checkpoints = glob(self.checkpoint_path + '/*')
+        if len(checkpoints) == 0:
+            print('No checkpoints found at {}'.format(self.checkpoint_path))
             return 0
-        else:
-            checkpoints = glob(self.checkpoint_path + '/*')
-            if len(checkpoints) == 0:
-                print('No checkpoints found at {}'.format(self.checkpoint_path))
+
+        if number is None:
+            checkpoints = [os.path.splitext(os.path.basename(path))[
+                0][17:] for path in checkpoints]
+            checkpoints = np.array(checkpoints, dtype=int)
+            checkpoints = np.sort(checkpoints)
+
+            if checkpoints[-1] == 0:
+                print('Not loading model as this is the first epoch')
                 return 0
 
-            if number is None:
-                checkpoints = [os.path.splitext(os.path.basename(path))[
-                    0][17:] for path in checkpoints]
-                checkpoints = np.array(checkpoints, dtype=int)
-                checkpoints = np.sort(checkpoints)
+            path = join(self.checkpoint_path, 'checkpoint_epoch_{}.tar'.format(checkpoints[-1]))
+        else:
+            path = join(self.checkpoint_path, 'checkpoint_epoch_{}.tar'.format(number))
 
-                if checkpoints[-1] == 0:
-                    print('Not loading model as this is the first epoch')
-                    return 0
+        print('Loaded checkpoint from: {}'.format(path))
+        checkpoint = torch.load(path)
 
-                path = join(self.checkpoint_path,
-                            'checkpoint_epoch_{}.tar'.format(checkpoints[-1]))
-            else:
-                path = join(self.checkpoint_path,
-                            'checkpoint_epoch_{}.tar'.format(number))
-
-            print('Loaded checkpoint from: {}'.format(path))
-            checkpoint = torch.load(path)
-
-            epoch = checkpoint['epoch']
+        # load optimizers and schedulers to recover training 
+        epoch = checkpoint['epoch']
+        if checkpoint.get('optimizer_state_dict') is not None:
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            print('load network optimizer')
+        if checkpoint.get('scheduler_state_dict') is not None:
+            self.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+            print('load scheduler for network optimizer')
+        if checkpoint.get('feat_optimizer_state_dict') is not None:
+            # self.feat_optimizer.load_state_dict(checkpoint['feat_optimizer_state_dict'])
+            print('load feature space optimizer')
+        if checkpoint.get('feat_scheduler_state_dict') is not None:
+            # self.feat_scheduler.load_state_dict(checkpoint['feat_scheduler_state_dict'])
+            print('load scheduler for feature space optimizer')
 
-            if self.pose_encoder is not None:
-                self.pose_encoder.load_state_dict(checkpoint['pose_encoder_state_dict'])
-            if self.nsf_decoder is not None:
-                self.nsf_decoder.load_state_dict(checkpoint['nsf_decoder_state_dict'])
+        # load networks checkpoint
+        if self.pose_encoder is not None:
+            self.pose_encoder.load_state_dict(checkpoint['pose_encoder_state_dict'])
+            print("load pose encoder at epoch {}".format(epoch))
+        if self.nsf_decoder is not None:
+            self.nsf_decoder.load_state_dict(checkpoint['nsf_decoder_state_dict'])
+            print("load nsf decoder at epoch {}".format(epoch))
 
-            return epoch
+        return epoch
 
     def train_model(self, epochs, pretrained=None, checkpoint=None):
 
