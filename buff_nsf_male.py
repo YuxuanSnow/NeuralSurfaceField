@@ -30,6 +30,7 @@ from visualization.write_pcd import write_pcd
 from trainer.basic_trainer_nsf import Basic_Trainer_nsf
 from libs.sample import compute_smaple_on_body_mask_w_batch
 from libs.barycentric_corr_finding import point_to_mesh_distance, face_vertices
+from libs.data_io import save_result_ply
 
 from pytorch3d.ops import sample_points_from_meshes
 from pytorch3d.structures import Meshes
@@ -40,6 +41,8 @@ from pytorch3d.loss import (
     mesh_normal_consistency,
 )
 
+from pytorch3d.io import save_obj, save_ply
+
 from models.losses import chamfer_distance_s2m_m2s
 
 class Trainer(Basic_Trainer_nsf):
@@ -47,23 +50,21 @@ class Trainer(Basic_Trainer_nsf):
     # test on seen subjects but unseen subject
     def test_model(self, save_name, num_samples=-1, pretrained=None, checkpoint=None):
 
-        epoch = self.load_checkpoint(path=pretrained, number=checkpoint, load_feat_optimizer=False)
+        epoch = self.load_checkpoint(path=pretrained, number=checkpoint)
 
         print('Testing with epoch {}'.format(epoch))
         val_data_loader = self.val_dataset.get_loader(shuffle=False)
 
-        test_s2m, test_lnormal = 0, 0
         with torch.no_grad():
 
             self.set_feat_training_mode(train_flag=False)
-            count = 0
             for n, batch in enumerate(tqdm(val_data_loader)):
 
                 device = self.device
 
                 pose = batch.get('pose').to(device)
                 feature_cube_idx = batch.get('feature_cube_idx').to(device)
-                coarse_corr = batch.get('coarse_corr').to(device)
+                coarse_corr = batch.get('coarse_cano_points').to(device)
 
                 inputs = {'coarse_corr': coarse_corr,
                         'pose': pose,
@@ -76,8 +77,6 @@ class Trainer(Basic_Trainer_nsf):
                 pred_posed_normals_corr = logits['posed_cloth_normals'].permute(0, 2, 1)[:, :30000].contiguous() # [B, 30000, 3]
                 pred_posed_cloth_verts = logits['posed_cloth_points'].permute(0, 2, 1)[:, 30000:].contiguous() # [B, ?, 3]
                 pred_cano_cloth_verts = logits['cano_cloth_points'].permute(0, 2, 1)[:, 30000:].contiguous()
-                pred_cano_color = logits['cano_color'].permute(0, 2, 1)[:, 30000:].contiguous().detach()# [B, 30000, 3]
-
 
                 gt_posed_cloth_points = batch.get('scan_points').to(device).permute(0, 2, 1).contiguous() # [B, 40000, 3]
                 gt_posed_cloth_normals = batch.get('scan_normals').to(device).permute(0, 2, 1).contiguous() # [B, 40000, 3]
@@ -86,28 +85,15 @@ class Trainer(Basic_Trainer_nsf):
                 gt_posed_cloth_normals[scan_rot_normals[:, :, -1]<0] = -gt_posed_cloth_normals[scan_rot_normals[:, :, -1]<0]
 
                 # get updated mesh
-                faces_new = self.subject_feature_model.smpl_d_dense_mesh.faces_padded()[feature_cube_idx].cuda()
-                new_meshes = Meshes(pred_posed_cloth_verts, faces_new)
-                x_pred_sampled, x_pred_sampled_normal = sample_points_from_meshes(new_meshes, num_samples=100000, return_normals=True)
-
-                # --------------------------------
-                # ------------ losses ------------
-
-                # chamfer distance
-                s2m, s2m_normal = chamfer_distance_s2m(x_pred_sampled, gt_posed_cloth_points, x_normals=x_pred_sampled_normal, y_normals=gt_posed_cloth_normals)
+                faces_new = self.nsf_feature_surface.smpl_d_dense_mesh.faces_padded().to(device)[feature_cube_idx]
 
                 names = batch.get('path')
 
-                test_s2m += torch.sum(s2m) 
-                test_lnormal += torch.sum(s2m_normal)
-
                 for i in range(len(names)):
                     file_path = names[i]
-                    name = split(file_path)[1]
-                    front_or_back = file_path.split('/')[-6]
-                    dataset = split(split(file_path)[0])[1]
-                    subject = file_path.split('/')[-4]
-                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, dataset, name.split('.')[0])
+                    subject = file_path.split('/')[9] # if local 9; if cluster 12
+                    garment = split(file_path)[1].split('_')[0]
+                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
 
                     if not os.path.exists(save_folder):
                         os.makedirs(save_folder)
@@ -115,12 +101,7 @@ class Trainer(Basic_Trainer_nsf):
                     # save predicted reposed correspondence
                     save_result_ply(save_folder, points=pred_posed_cloth_points_corr[i], normals=pred_posed_normals_corr[i], gt=gt_posed_cloth_points[i], gt_normals=gt_posed_cloth_normals[i])
 
-                    from pytorch3d.io import save_obj
-                    save_obj(save_folder+'/pred.obj', verts=pred_posed_cloth_verts[i], faces=faces_new[i])
-                    save_result_ply(save_folder, points=pred_posed_cloth_verts[i], faces=faces_new[i], colors=pred_cano_color[i])
-
-                    from pytorch3d.io import save_ply
-                    if True:
+                    if False:
                         # forward skin the naked SMPL and fusion shape for comparison
                         naked_smpl_pts = self.subject_feature_model.smpl_mesh.to(self.device).verts_padded()[feature_cube_idx].permute(0, 2, 1).contiguous()
                         naked_smpl_faces = self.subject_feature_model.smpl_mesh.to(self.device).faces_padded()[feature_cube_idx]
@@ -136,16 +117,6 @@ class Trainer(Basic_Trainer_nsf):
 
                     save_ply(save_folder+'/pred.ply', verts=pred_posed_cloth_verts[i], faces=faces_new[i])
                     save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[i], faces=faces_new[i])
-
-                            
-                if num_samples > 0:
-                    if count >= num_samples:
-                        break
-                
-                count += 1
-            test_s2m /= len(val_data_loader)
-            test_lnormal /= len(val_data_loader)
-            print("scan2model dist: {:.3e}, normal loss: {:.3e}".format(test_s2m, test_lnormal))
 
 
     def predict(self, batch, animate=False, train=True):
@@ -181,7 +152,7 @@ class Trainer(Basic_Trainer_nsf):
         not_on_body_mask = torch.logical_or(smpl_hand_mask, smpl_feet_mask)
         on_body_mask = ~not_on_body_mask
 
-        valid_mask = torch.logical_and(valid_mask, on_body_mask)
+        valid_mask = torch.logical_and(valid_mask, on_body_mask) # [B, N]. Filter our hand and feet as well as not on fusion shape points
 
         # 2nd: query corresponding local feature
         feat_pose_loc, skinning_weights = query_local_feature_skinning(x_c_coarse, pose, subject_garment_id, self.nsf_feature_surface, self.pose_encoder)
@@ -190,6 +161,7 @@ class Trainer(Basic_Trainer_nsf):
         fine_cano_offset, fine_cano_normals = geometry_manifold_neural_field(feat_pose_loc, self.nsf_decoder)
         fine_cano_points = x_c_coarse + fine_cano_offset
 
+        '''
         replace_hand_foot = False
         avoid_large_displacement = False
 
@@ -204,6 +176,7 @@ class Trainer(Basic_Trainer_nsf):
             # ignore too large displacement
             invalid_mask = fine_cano_offset > 0.05
             fine_cano_points[invalid_mask] = x_c_coarse[invalid_mask]
+        '''
 
         posed_cloth_points, posed_cloth_normals = reposing_cano_points_fix_skinning(x_c_coarse, fine_cano_points, fine_cano_normals, pose, trans, subject_garment_id, self.diffused_skinning_field, skinner, skinner_normal, skinning_weights=skinning_weights)
         
@@ -238,8 +211,8 @@ class Trainer(Basic_Trainer_nsf):
 
         pred_posed_cloth_points_corr = logits['posed_cloth_points'].permute(0, 2, 1).contiguous()[:, :30000][valid_mask_corr_points] # [N, 3]
         pred_posed_normals_corr = logits['posed_cloth_normals'].permute(0, 2, 1).contiguous()[:, :30000][valid_mask_corr_points] # [N, 3]
-        pred_cano_cloth_displacements = logits['cano_cloth_displacements'].contiguous().permute(0, 2, 1)[logits['valid_mask']]
-        pred_geometric_feature = logits['geometric_feat'].permute(0, 2, 1).contiguous()[:, :, :64][logits['valid_mask']]
+        pred_cano_cloth_displacements = logits['cano_cloth_displacements'].contiguous().permute(0, 2, 1)# [logits['valid_mask']]
+        pred_geometric_feature = logits['geometric_feat'].permute(0, 2, 1).contiguous()[:, :, :64]# [logits['valid_mask']]
 
         pred_cano_cloth_verts = logits['posed_cloth_points'].permute(0, 2, 1).contiguous()[:, 30000:]
         # get updated mesh
@@ -264,6 +237,7 @@ class Trainer(Basic_Trainer_nsf):
         for i in range(valid_mask_corr_points.shape[0]):
             s2m_, _, _, _ = chamfer_distance_s2m_m2s(x_pred_sampled[i][None], gt_posed_cloth_points[i, valid_mask_corr_points[i]][None], x_normals=x_pred_sampled_normal[i][None], y_normals=gt_posed_cloth_normals[i, valid_mask_corr_points[i]][None])
             s2m += s2m_
+        s2m /= valid_mask_corr_points.shape[0]
 
         # v2v distance
         v2v_dist_posed_cloth = F.mse_loss(pred_posed_cloth_points_corr, gt_posed_cloth_points[valid_mask_corr_points], reduction='none').sum(-1).mean()
@@ -301,7 +275,7 @@ if __name__ == "__main__":
     parser.add_argument('-epochs', '--epochs', default=300, type=int)
     # val, ft, pose_track, animate, detail_recon
     parser.add_argument('-mode', '--mode', default='train', type=str)
-    parser.add_argument('-save_name', '--save_name', default='Recon_256', type=str)
+    parser.add_argument('-save_name', '--save_name', default='smpld_sub', type=str)
 
     args = parser.parse_args()
 
@@ -385,10 +359,11 @@ if __name__ == "__main__":
         trainer.train_model(args.epochs)
 
     if args.mode == 'test':
-        val_dataset = DataLoader_Buff_depth_male_mask(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
 
-        trainer.test_model(args.save_name, args.num_samples, pretrained=args.pretrained, checkpoint=args.checkpoint)
+        val_dataset = DataLoader_Buff_depth(mode='val', nsf_cano_available=True, batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
+        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), val_dataset=val_dataset, exp_name=exp_name)
+
+        trainer.test_model(args.save_name)
 
     if args.mode == 'fine_tune':
         val_dataset = DataLoader_Buff_depth_male_mask(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
@@ -403,9 +378,4 @@ if __name__ == "__main__":
 
         trainer.animate_model(args.save_name, args.num_samples, pretrained=args.pretrained, checkpoint=args.checkpoint)
 
-    if args.mode == 'val':
-
-        val_dataset = DataLoader_Buff_depth_male_mask(mode='val', batch_size=args.batch_size, num_workers=4, split_file=args.split_file, subject_index_dict=subject_index_dict, num_points=30000)  
-        trainer = Trainer(module_dict, pretrained_module_dict, device=torch.device("cuda"), train_dataset=None, val_dataset=val_dataset, exp_name=exp_name)
-
-        trainer.val_model(args.save_name, args.num_samples, pretrained=args.pretrained, checkpoint=args.checkpoint)
+    
