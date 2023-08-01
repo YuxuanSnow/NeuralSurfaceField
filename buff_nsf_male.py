@@ -93,7 +93,7 @@ class Trainer(Basic_Trainer_nsf):
                     file_path = names[i]
                     subject = file_path.split('/')[position] # if local 9; if cluster 12
                     garment = split(file_path)[1].split('_')[0]
-                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment, names[0].split('/')[-1].split('.')[0]
+                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment, names[0].split('/')[-1].split('.')[0])
 
                     if not os.path.exists(save_folder):
                         os.makedirs(save_folder)

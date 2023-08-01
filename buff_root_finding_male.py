@@ -53,7 +53,10 @@ class Trainer(Basic_Trainer_invskinning):
 
             face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
             residues, pts_ind, _ = point_to_mesh_distance(inv_posed_points, face_verts_loc)
-            valid_mask = residues<0.03
+            if feature_cube_idx[0] == 2 or feature_cube_idx[0] == 0:
+                valid_mask = residues<0.005 # buff scan is clean, no need to filter too much
+            else:
+                valid_mask = residues<0.002
             inv_posed_points = inv_posed_points[valid_mask][None] # [B, N, 3]
             inv_posed_normal = inv_posed_normal[valid_mask][None] # [B, N, 3]
 
@@ -73,7 +76,7 @@ class Trainer(Basic_Trainer_invskinning):
                 file_path = names[0]
                 subject = file_path.split('/')[position] # if local 9; if cluster 12
                 garment = split(file_path)[1].split('_')[0]
-                save_folder = join("./visualization", 'debug_inv_skinning', subject, garment)
+                save_folder = join("./visualization", 'debug_inv_skinning_7', subject, garment)
 
                 if not os.path.exists(save_folder):
                     os.makedirs(save_folder)
@@ -81,7 +84,7 @@ class Trainer(Basic_Trainer_invskinning):
                 path_cano = os.path.join(save_folder, 'cano_corr_{}.ply'.format(names[0].split('/')[-1]))
 
                 # write cano point cloud
-                write_pcd(path_cano, inv_posed_points, inv_posed_normal)
+                write_pcd(path_cano, inv_posed_points.cpu().numpy()[0], inv_posed_normal.cpu().numpy()[0])
 
             path_batch = batch.get('path')
 
@@ -94,11 +97,12 @@ class Trainer(Basic_Trainer_invskinning):
                 file_new = {
                     "cano_points": inv_posed_points[i][:num_org_points_i].cpu().numpy(),
                     "cano_normals": inv_posed_normal[i][:num_org_points_i].cpu().numpy(),
+                    "valid_mask": valid_mask[i][:num_org_points_i].cpu().numpy()
                 }
 
                 file_path_new = file_path.split(".")[0] + "_cano." + file_path.split(".")[1]
 
-                # np.save(file_path_new, file_new)
+                np.save(file_path_new, file_new)
 
 
 if __name__ == "__main__":

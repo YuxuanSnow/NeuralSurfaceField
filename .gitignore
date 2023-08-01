@@ -21,6 +21,8 @@ assets/data_split/*
 *.sh
 cluster/*
 
+libs/global_variable.py
+
 # vscode
 .vscode/*
 
