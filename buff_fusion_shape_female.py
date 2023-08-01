@@ -400,37 +400,28 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     args.subject_paths = [
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.exp_id),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortshort'.format(args.exp_id),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.exp_id),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortshort'.format(args.exp_id)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/03223/shortlong'.format(args.exp_id),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/03223/shortshort'.format(args.exp_id)
     ]
 
     args.pretrained_feature_exp_path = [
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortlong'.format(args.pretrained_exp),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00032/shortshort'.format(args.pretrained_exp),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortlong'.format(args.pretrained_exp),
-        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/00096/shortshort'.format(args.pretrained_exp)
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/03223/shortlong'.format(args.pretrained_exp),
+        ROOT_DIR + 'experiments/PoseImplicit_exp_id_{}/03223/shortshort'.format(args.pretrained_exp)
     ]
 
     args.num_subjects = len(args.subject_paths)
 
     subject_index_dict = {}
-    subject_index_dict.update({"00032_shortlong": 0,
-                               "00032_shortshort": 1,
-                               "00096_shortlong": 2,
-                               "00096_shortshort": 3})
+    subject_index_dict.update({"03223_shortlong": 0,
+                               "03223_shortshort": 1})
 
     # multi subj query: for one subject with different garments, only use one skinning field
     general_subject_index = {}
     general_subject_index_numer = {}
     for key, value in subject_index_dict.items():
-        if key.startswith('00032'):
-            general_subject_index.update({'{}'.format(value): '00032'})
+        if key.startswith('03223'):
+            general_subject_index.update({'{}'.format(value): '03223'})
             general_subject_index_numer.update({value: 0})
-        if key.startswith('00096'):
-            general_subject_index.update({'{}'.format(value): '00096'})
-            general_subject_index_numer.update({value: 1})
 
     print("Split file: ", args.split_file)
 
@@ -455,10 +446,10 @@ if __name__ == "__main__":
     conditional_sdf = MyDataParallel(IGRSDFNet(cond=256, bbox_min=bbox_min, bbox_max=bbox_max))
 
     # for forward skinning
-    inv_skinner = MyDataParallel(InvSkinModel(gender='male'))
-    inv_skinner_normal = MyDataParallel(InvSkinModel_RotationOnly(gender='male'))
-    skinner = MyDataParallel(SkinModel(gender='male'))
-    skinner_normal = MyDataParallel(SkinModel_RotationOnly(gender='male'))
+    inv_skinner = MyDataParallel(InvSkinModel(gender='female'))
+    inv_skinner_normal = MyDataParallel(InvSkinModel_RotationOnly(gender='female'))
+    skinner = MyDataParallel(SkinModel(gender='female'))
+    skinner_normal = MyDataParallel(SkinModel_RotationOnly(gender='female'))
 
     module_dict = {
         'inv_skinner': inv_skinner,

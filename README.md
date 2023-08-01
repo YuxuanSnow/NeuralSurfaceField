@@ -57,9 +57,20 @@ python setup.py develop
     - basicModel_f_lbs_10_207_0_v1.0.0.pkl
 ```
 
+### Pre-diffuse SMPL skinning weights field
+We use FITE (Lin et al., ECCV2022) to compute the smooth SMPL skinning weights field. 
+Please refer to `https://github.com/jsnln/fite#3-diffused-skinning` for more information.
+Please copy the computed skinning weights field as well as the canonical pose mesh to `ROOT_DIR/diffused_smpl_skinning_field`. File structure should look like:
+```
+- ROOT_DIR
+  - diffused_smpl_skinning_field
+    - subject_cano_lbs_weights_grid_float32.npy
+    - subject_minimal_cpose.ply
+```
+
 ## Synthetic Data
 ### BuFF 
-1. Download BuFF dataset (https://buff.is.tue.mpg.de/) and unzip it to 
+1. Download BuFF dataset (https://buff.is.tue.mpg.de/) as well as textured scan from CAPE dataset (https://cape.is.tue.mpg.de/) and unzip it to 
 ```
 DATA_DIR/BuFF/buff_release/sequences/subject_id/garment_action/garment_action_frame.ply
 ```
@@ -80,6 +91,12 @@ DATA_DIR/BuFF/buff_release/misc/subj_genders.pkl
 cd depth_renderer/
 python buff_preprocessing.py
 ```
+5. Get the train/split file
+```
+cd dataloaders
+python data_split.py --gender male
+python data_split.py --gender female
+```
 
 ## Running
 ### Learn Fusion Shape via SDF
@@ -87,8 +104,13 @@ python buff_preprocessing.py
 canonicalize input partial shape by root finding, save to preprocessed file.
 ```
 python buff_root_finding_male.py
+python buff_root_finding_female.py
 ```
 
 #### 2. Learn Canonical Fusion Shape
+```
+python buff_fusion_shape_male.py --exp_id 1 --batch_size 1 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
+python buff_fusion_shape_female.py --exp_id 1 --batch_size 1 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
+```
 
 ### 2. Learn Neural Surface Field based on Fusion Shape

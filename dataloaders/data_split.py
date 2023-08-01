@@ -3,9 +3,7 @@ sys.path.append('..')
 from libs.global_variable import ROOT_DIR
 
 import os
-from os.path import join, split, exists
-from glob import glob
-from tqdm import tqdm
+import argparse
 import pickle as pkl
 import random
 
@@ -39,7 +37,7 @@ def train_val_data_split(train_subject, data_path, save_loc):
 
             print(len(subject_available_frames))
             random.shuffle(subject_available_frames)
-            subject_available_frames = subject_available_frames[::2]
+            subject_available_frames = subject_available_frames[::4]
             count = int(len(subject_available_frames)*0.9)
 
             train_frames.extend(subject_available_frames[:count])
@@ -90,10 +88,22 @@ def animation_data_split(train_subject, data_path, save_loc):
 
 if __name__ == "__main__":
 
-    training_subject = ["00096", "00032"]
+    parser = argparse.ArgumentParser(description='Run Model')
+    # experiment id for folder suffix
+    parser.add_argument('-gender', '--gender', type=str)
 
-    preprocessed_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
-    save_loc = ROOT_DIR + 'assets/data_split/buff_male_train_val.pkl'
+    args = parser.parse_args()
+
+    if args.gender == 'male':
+
+        training_subject = ["00096", "00032"]
+        preprocessed_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
+        save_loc = ROOT_DIR + 'assets/data_split/buff_male_train_val.pkl'
+    elif args.gender == 'female':
+
+        training_subject = ["03223"]
+        preprocessed_path = ROOT_DIR + 'Data_female/BuFF/buff_release_rot_const/'
+        save_loc = ROOT_DIR + 'assets/data_split/buff_female_train_val.pkl'
 
     if not os.path.exists(os.path.dirname(save_loc)):
         os.makedirs(os.path.dirname(save_loc))
