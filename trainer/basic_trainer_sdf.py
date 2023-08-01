@@ -142,7 +142,7 @@ class Basic_Trainer_sdf(object):
             print('Start epoch {}'.format(epoch))
             train_data_loader = self.train_dataset.get_loader()
 
-            if epoch % 50 == 0 and epoch != start:
+            if epoch % 20 == 0 and epoch != start:
                 self.save_checkpoint(epoch)
                 self.subject_global_latent.save_features(epoch)
                 

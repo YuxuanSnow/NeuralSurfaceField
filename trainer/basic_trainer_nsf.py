@@ -173,7 +173,7 @@ class Basic_Trainer_nsf(object):
             print('Start epoch {}'.format(epoch))
             train_data_loader = self.train_dataset.get_loader()
 
-            if epoch % 50 == 0 and epoch != start:
+            if epoch % 20 == 0 and epoch != start:
                 self.save_checkpoint(epoch)
                 self.nsf_feature_surface.save_features(epoch)
 
@@ -227,7 +227,7 @@ class Basic_Trainer_nsf(object):
 
             self.feat_scheduler.step()
 
-            if epoch % 50 == 0:
+            if epoch % 20 == 0:
                 self.nsf_feature_surface.save_features(epoch)
 
             loss_str = ''
