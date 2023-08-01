@@ -61,7 +61,7 @@ class Trainer(Basic_Trainer_invskinning):
             inv_posed_normal = inv_posed_normal[valid_mask][None] # [B, N, 3]
 
             # debug 
-            debug = True
+            debug = False
             if debug:
 
                 import open3d as o3d
@@ -76,7 +76,7 @@ class Trainer(Basic_Trainer_invskinning):
                 file_path = names[0]
                 subject = file_path.split('/')[position] # if local 9; if cluster 12
                 garment = split(file_path)[1].split('_')[0]
-                save_folder = join("./visualization", 'debug_inv_skinning_7', subject, garment)
+                save_folder = join("./visualization", 'debug_inv_skinning', subject, garment)
 
                 if not os.path.exists(save_folder):
                     os.makedirs(save_folder)
