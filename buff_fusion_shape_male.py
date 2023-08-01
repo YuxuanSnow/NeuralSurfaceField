@@ -283,11 +283,11 @@ class Trainer(Basic_Trainer_sdf):
 
         replaced_cano_pts = torch.cat((on_body_points, on_hand_feet_points, on_scalp_points), dim=1)
 
-        # find closest face index from points to dense smpl mesh: filter outlier points; Won't affect saved preprocessed canonical points
-        face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
-        residues, pts_ind, _ = point_to_mesh_distance(replaced_cano_pts, face_verts_loc)
-        valid_mask = residues<0.03
-        replaced_cano_pts = replaced_cano_pts[valid_mask][None]
+        # find closest face index from points to dense smpl mesh: already preprocessed in root finding
+        # face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
+        # residues, pts_ind, _ = point_to_mesh_distance(replaced_cano_pts, face_verts_loc)
+        # valid_mask = residues<0.03
+        # replaced_cano_pts = replaced_cano_pts[valid_mask][None]
 
         query_value = self.subject_global_latent(replaced_cano_pts.permute(0, 2, 1), subject_garment_id) # [B, 256+3, num_points]
 
@@ -297,7 +297,7 @@ class Trainer(Basic_Trainer_sdf):
         logits.update({'scalp_normals': smpl_normals[:, on_scalp_mask[0]]})  # [B, N, 3]
         logits.update({'query_location': replaced_cano_pts})
         logits.update({'on_body_mask': on_body_mask})  # [B, N]
-        logits.update({'near_smpl_mask': valid_mask})  # [B, N]
+        # logits.update({'near_smpl_mask': valid_mask})  # [B, N]
 
         return logits
 
@@ -328,10 +328,10 @@ class Trainer(Basic_Trainer_sdf):
         inv_body_normals = inv_posed_normals_[:, on_body_mask[0]]
 
         replaced_cano_normals = torch.cat((inv_body_normals, hand_feet_normals, scalp_normals), dim=1)
-        replaced_cano_normals = replaced_cano_normals[logits['near_smpl_mask']][None]
+        # replaced_cano_normals = replaced_cano_normals[logits['near_smpl_mask']][None]
         
         # debug 
-        debug = True
+        debug = False
         if debug:
             replaced_points = logits.get('query_location')[0].cpu().numpy()
             replaced_normals = replaced_cano_normals[0].cpu().numpy()
