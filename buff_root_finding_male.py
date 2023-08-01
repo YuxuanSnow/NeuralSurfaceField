@@ -1,7 +1,10 @@
 from libs.global_variable import ROOT_DIR
+from libs.global_variable import position
 
 # find pose-dependent canonical correspondence via inverse skinning
 import torch
+from os.path import join, split
+import os
 
 from libs.canonicalization_root_finding import search
 from libs.skinning_functions import InvSkinModel_RotationOnly, SkinModel, InvSkinModel, SkinModel_RotationOnly
@@ -15,6 +18,10 @@ from trainer.basic_trainer_invskinning import Basic_Trainer_invskinning
 from tqdm import tqdm
 import numpy as np
 import argparse
+
+from libs.barycentric_corr_finding import point_to_mesh_distance, face_vertices
+
+from pytorch3d.structures import Meshes
 
 class Trainer(Basic_Trainer_invskinning):
 
@@ -40,6 +47,42 @@ class Trainer(Basic_Trainer_invskinning):
             posed_normals.permute(0,2,1)[scan_rot_normals[:, :, -1]<0] = -posed_normals.permute(0,2,1)[scan_rot_normals[:, :, -1]<0]
             inv_posed_normal = self.inv_skinner_normal(posed_normals, pose, skinning_weights_xc)['cano_cloth_normals'].permute(0, 2, 1)
 
+            smpl_verts = self.diffused_skinning_field.smpl_ref_verts.to(device)[feature_cube_idx]
+            smpl_faces = self.diffused_skinning_field.smpl_ref_faces.to(device)
+            smpl_mesh = Meshes(verts=[smpl_verts[0].float()], faces=[smpl_faces.float()])
+
+            face_verts_loc = face_vertices(smpl_mesh.verts_padded(), smpl_mesh.faces_padded()).contiguous()
+            residues, pts_ind, _ = point_to_mesh_distance(inv_posed_points, face_verts_loc)
+            valid_mask = residues<0.03
+            inv_posed_points = inv_posed_points[valid_mask][None] # [B, N, 3]
+            inv_posed_normal = inv_posed_normal[valid_mask][None] # [B, N, 3]
+
+            # debug 
+            debug = True
+            if debug:
+
+                import open3d as o3d
+                # write function which uses open3d to write point cloud
+                def write_pcd(path, points, normals):
+                    pcd = o3d.geometry.PointCloud()
+                    pcd.points = o3d.utility.Vector3dVector(points)
+                    pcd.normals = o3d.utility.Vector3dVector(normals)
+                    o3d.io.write_point_cloud(path, pcd)
+
+                names = batch.get('path')
+                file_path = names[0]
+                subject = file_path.split('/')[position] # if local 9; if cluster 12
+                garment = split(file_path)[1].split('_')[0]
+                save_folder = join("./visualization", 'debug_inv_skinning', subject, garment)
+
+                if not os.path.exists(save_folder):
+                    os.makedirs(save_folder)
+
+                path_cano = os.path.join(save_folder, 'cano_corr_{}.ply'.format(names[0].split('/')[-1]))
+
+                # write cano point cloud
+                write_pcd(path_cano, inv_posed_points, inv_posed_normal)
+
             path_batch = batch.get('path')
 
             num_org_points = batch.get('num_org_points')
@@ -55,7 +98,7 @@ class Trainer(Basic_Trainer_invskinning):
 
                 file_path_new = file_path.split(".")[0] + "_cano." + file_path.split(".")[1]
 
-                np.save(file_path_new, file_new)
+                # np.save(file_path_new, file_new)
 
 
 if __name__ == "__main__":
