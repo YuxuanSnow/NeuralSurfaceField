@@ -10,7 +10,7 @@ from libs.canonicalization_root_finding import search
 from libs.skinning_functions import InvSkinModel_RotationOnly, SkinModel, InvSkinModel, SkinModel_RotationOnly
 from models.person_diffused_skinning import SmoothDiffusedSkinningField 
 
-from dataloaders.dataloader_buff import DataLoader_Buff_depth
+from dataloaders.dataloader_buff import DataLoader_Buff_depth_rootfinding
 
 from trainer.data_parallel import MyDataParallel
 from trainer.basic_trainer_invskinning import Basic_Trainer_invskinning
@@ -57,8 +57,8 @@ class Trainer(Basic_Trainer_invskinning):
                 valid_mask = residues<0.005 # buff scan is clean, no need to filter too much
             else:
                 valid_mask = residues<0.002
-            inv_posed_points = inv_posed_points[valid_mask][None] # [B, N, 3]
-            inv_posed_normal = inv_posed_normal[valid_mask][None] # [B, N, 3]
+            inv_posed_points_ = inv_posed_points[valid_mask][None] # [B, N, 3]
+            inv_posed_normal_ = inv_posed_normal[valid_mask][None] # [B, N, 3]
 
             # debug 
             debug = False
@@ -87,17 +87,14 @@ class Trainer(Basic_Trainer_invskinning):
                 write_pcd(path_cano, inv_posed_points.cpu().numpy()[0], inv_posed_normal.cpu().numpy()[0])
 
             path_batch = batch.get('path')
-
-            num_org_points = batch.get('num_org_points')
             
             for i in range(len(path_batch)):
                 file_path = path_batch[i]
-                num_org_points_i = num_org_points[i]
 
                 file_new = {
-                    "cano_points": inv_posed_points[i][:num_org_points_i].cpu().numpy(),
-                    "cano_normals": inv_posed_normal[i][:num_org_points_i].cpu().numpy(),
-                    "valid_mask": valid_mask[i][:num_org_points_i].cpu().numpy()
+                    "cano_points": inv_posed_points_[i].cpu().numpy(),
+                    "cano_normals": inv_posed_normal_[i].cpu().numpy(),
+                    "valid_mask": valid_mask[i].cpu().numpy()
                 }
 
                 file_path_new = file_path.split(".")[0] + "_cano." + file_path.split(".")[1]
@@ -150,7 +147,7 @@ if __name__ == "__main__":
     # preprocessed path 
     preprocessed_buff_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/sequences'
 
-    dataset = DataLoader_Buff_depth(proprocessed_path=preprocessed_buff_path, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
+    dataset = DataLoader_Buff_depth_rootfinding(proprocessed_path=preprocessed_buff_path, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
     trainer = Trainer(module_dict, device=torch.device("cuda"), dataset=dataset)
 
     trainer.canonicalize_points()
