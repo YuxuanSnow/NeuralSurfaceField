@@ -20,6 +20,7 @@ Data_female/*
 assets/data_split/*
 *.sh
 cluster/*
+data_backup/*
 
 libs/global_variable.py
 
