@@ -133,6 +133,7 @@ class DataLoader_Buff_depth(BaseLoader):
                 dd_cano = np.load(file_path.split(".")[0] + "_cano." + file_path.split(".")[1], allow_pickle=True).item()
                 self.cano_points.append(torch.tensor(dd_cano['cano_points'][idx_list].transpose()).float())
                 self.cano_normals.append(torch.tensor(dd_cano['cano_normals'][idx_list].transpose()).float())
+                assert(dd['points_posed_cloth'].transpose().shape==dd_cano['cano_points'].shape)
 
             if self.nsf_cano_available:
                 dd_cano = np.load(file_path.split(".")[0] + "_cano." + file_path.split(".")[1], allow_pickle=True).item()
