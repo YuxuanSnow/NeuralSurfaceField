@@ -93,27 +93,13 @@ class Trainer(Basic_Trainer_nsf):
                     file_path = names[i]
                     subject = file_path.split('/')[position] # if local 9; if cluster 12
                     garment = split(file_path)[1].split('_')[0]
-                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
+                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment, names[0].split('/')[-1].split('.')[0]
 
                     if not os.path.exists(save_folder):
                         os.makedirs(save_folder)
 
                     # save predicted reposed correspondence
                     save_result_ply(save_folder, points=pred_posed_cloth_points_corr[i], normals=pred_posed_normals_corr[i], gt=gt_posed_cloth_points[i], gt_normals=gt_posed_cloth_normals[i])
-
-                    if False:
-                        # forward skin the naked SMPL and fusion shape for comparison
-                        naked_smpl_pts = self.subject_feature_model.smpl_mesh.to(self.device).verts_padded()[feature_cube_idx].permute(0, 2, 1).contiguous()
-                        naked_smpl_faces = self.subject_feature_model.smpl_mesh.to(self.device).faces_padded()[feature_cube_idx]
-                        _, skinning_weights_naked_smpl, _ = query_local_feature_skinnin_color(naked_smpl_pts, pose, feature_cube_idx, self.subject_feature_model, self.pose_encoder)
-                        posed_naked_verts, _ = reposing_cano_points_fix_skinning(naked_smpl_pts, naked_smpl_pts, None, pose, inputs['trans'], feature_cube_idx, self.diffused_skinning_field, skinner, skinner_normal, skinning_weights=skinning_weights_naked_smpl)
-                        save_obj(save_folder+'/naked_pred.obj', verts=posed_naked_verts.permute(0,2,1)[i], faces=naked_smpl_faces[i])
-
-
-                        fusion_shape_pts = self.subject_feature_model.smpl_d_dense_mesh.to(self.device).verts_padded()[feature_cube_idx].permute(0, 2, 1).contiguous()
-                        _, skinning_weights_fusion_shape, _ = query_local_feature_skinnin_color(fusion_shape_pts, pose, feature_cube_idx, self.subject_feature_model, self.pose_encoder)
-                        posed_fusionshape_verts, _ = reposing_cano_points_fix_skinning(fusion_shape_pts, fusion_shape_pts, None, pose, inputs['trans'], feature_cube_idx, self.diffused_skinning_field, skinner, skinner_normal, skinning_weights=skinning_weights_fusion_shape)
-                        save_obj(save_folder+'/fusion_shape_pred.obj', verts=posed_fusionshape_verts.permute(0,2,1)[i], faces=faces_new[i])
 
                     save_ply(save_folder+'/pred.ply', verts=pred_posed_cloth_verts[i], faces=faces_new[i])
                     save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[i], faces=faces_new[i])
@@ -142,6 +128,8 @@ class Trainer(Basic_Trainer_nsf):
         face_verts_loc = face_vertices(smpl_d_mesh_all.verts_padded()[subject_garment_id], smpl_d_mesh_all.faces_padded()[subject_garment_id]).contiguous()
         residues, pts_ind, _ = point_to_mesh_distance(x_c_coarse.permute(0, 2, 1).contiguous(), face_verts_loc)
         valid_mask = residues<0.005
+        # valid mask use the pose-dependent cano shape and the fusion shape distance: to avoid those noisy points also be projected to fusion shape!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         subject_field_idx = torch.zeros_like(subject_garment_id)
         for i in range(len(subject_garment_id)):

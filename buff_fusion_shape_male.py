@@ -329,15 +329,14 @@ class Trainer(Basic_Trainer_sdf):
 
         replaced_cano_normals = torch.cat((inv_body_normals, hand_feet_normals, scalp_normals), dim=1)
         replaced_cano_normals = replaced_cano_normals[logits['near_smpl_mask']][None]
-
+        
         # debug 
         debug = True
         if debug:
             replaced_points = logits.get('query_location')[0].cpu().numpy()
             replaced_normals = replaced_cano_normals[0].cpu().numpy()
 
-            # import open3d as o3d
-
+            import open3d as o3d
             # write function which uses open3d to write point cloud
             def write_pcd(path, points, normals):
                 pcd = o3d.geometry.PointCloud()
@@ -367,7 +366,7 @@ class Trainer(Basic_Trainer_sdf):
         # eikonal term: the normal of the grad should be 1
         
         w_udf, w_normal, w_regular = weights
-        w_eikonal = w_normal / 10 * 3
+        w_eikonal = w_normal / 10
         w_normal = w_normal / 10
 
         loss_sdf = F.l1_loss(pred_sdf, torch.zeros_like(pred_sdf).to(device), reduction='none').mean()
