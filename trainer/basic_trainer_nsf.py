@@ -182,6 +182,9 @@ class Basic_Trainer_nsf(object):
             w_normal = 10
             w_rgl = 1e3
 
+            if epoch < 20:
+                w_rgl = 1e7
+            
             w_latent_rgl = 1
             weights = torch.tensor([w_v2v, w_sw, w_normal, w_rgl, w_latent_rgl])
             
