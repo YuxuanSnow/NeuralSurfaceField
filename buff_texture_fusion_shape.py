@@ -95,7 +95,7 @@ def vertex_color_nn(subject_garment_name, suffix=None, use_frames=10):
 
 
 if __name__ == "__main__":
-    subject_garment_name = ['00032_shortlong', '00032_shortshort', '00096_shortlong', '00096_shortshort']
+    subject_garment_name = ['00032_shortlong', '00032_shortshort', '00096_shortlong', '00096_shortshort', '03223_shortlong', '03223_shortshort']
 
     for i in subject_garment_name:
         print("processing subject_garment_name: ", i)
