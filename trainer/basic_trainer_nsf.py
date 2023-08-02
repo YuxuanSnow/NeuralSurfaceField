@@ -60,8 +60,8 @@ class Basic_Trainer_nsf(object):
             self.optimizer = optim.Adam(optimization_param_list, lr=1e-4)
             self.feat_optimizer = optim.Adam(feat_param_list, lr=1e-4)
 
-            self.scheduler = StepLR(self.optimizer, step_size = 100, gamma = 0.5)
-            self.feat_scheduler = StepLR(self.feat_optimizer, step_size = 100, gamma = 0.5)
+            self.scheduler = StepLR(self.optimizer, step_size = 60, gamma = 0.5)
+            self.feat_scheduler = StepLR(self.feat_optimizer, step_size = 60, gamma = 0.5)
 
         self.train_dataset = train_dataset
         self.val_dataset = val_dataset
@@ -207,7 +207,7 @@ class Basic_Trainer_nsf(object):
 
     def fine_tune_model(self, epochs, pretrained=True, checkpoint=None):
 
-        start = self.load_checkpoint(path=pretrained, number=checkpoint, load_feat_optimizer=True)
+        start = self.load_checkpoint(path=pretrained, number=checkpoint)
 
         for epoch in range(start, epochs):
             print('Start epoch {}'.format(epoch))
