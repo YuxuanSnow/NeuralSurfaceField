@@ -67,15 +67,17 @@ def animation_data_split(train_subject, data_path, save_loc):
 
             for npy_file_name in os.listdir(action_path):
                 
+                if npy_file_name.split('.')[0].endswith('cano'):
+                    continue
                 frame_npy_path = os.path.join(action_path, npy_file_name)
 
                 if not os.path.exists(frame_npy_path):
                     print('files missing of', subject_idx, " ", npy_file_name)
                     continue
-                            
-                subject_available_frames.append(frame_npy_path)
+                frame_relative_path = os.path.relpath(frame_npy_path, ROOT_DIR)
+                subject_available_frames.append(frame_relative_path)
 
-    print(len(subject_available_frames))
+            print(len(subject_available_frames))
 
     data['val'] = subject_available_frames        # for fine tune
 
@@ -91,26 +93,32 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run Model')
     # experiment id for folder suffix
     parser.add_argument('-gender', '--gender', type=str)
+    parser.add_argument('-mode', '--mode', type=str)
 
     args = parser.parse_args()
 
+    preprocessed_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
+
     if args.gender == 'male':
-
         training_subject = ["00096", "00032"]
-        preprocessed_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/'
-        save_loc = ROOT_DIR + 'assets/data_split/buff_male_train_val.pkl'
-    elif args.gender == 'female':
 
+        if args.mode == 'train':
+            save_loc = ROOT_DIR + 'assets/data_split/buff_male_train_val.pkl'
+        elif args.mode == 'animation':
+            save_loc = ROOT_DIR + 'assets/data_split/buff_male_animation.pkl'
+
+    elif args.gender == 'female':
         training_subject = ["03223"]
-        preprocessed_path = ROOT_DIR + 'Data_female/BuFF/buff_release_rot_const/'
-        save_loc = ROOT_DIR + 'assets/data_split/buff_female_train_val.pkl'
+
+        if args.mode == 'train':
+            save_loc = ROOT_DIR + 'assets/data_split/buff_female_train_val.pkl'
+        elif args.mode == 'animation':
+            save_loc = ROOT_DIR + 'assets/data_split/buff_female_animation.pkl'
 
     if not os.path.exists(os.path.dirname(save_loc)):
         os.makedirs(os.path.dirname(save_loc))
 
-    split_class = 'subject'
-    val_all = False
-
-    if val_all == False:
-        if split_class == 'subject':
-            train_val_data_split(training_subject, preprocessed_path, save_loc)
+    if args.mode == 'train':
+        train_val_data_split(training_subject, preprocessed_path, save_loc)
+    elif args.mode == 'animation':
+        animation_data_split(training_subject, preprocessed_path, save_loc)

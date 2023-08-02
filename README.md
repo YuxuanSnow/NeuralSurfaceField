@@ -12,7 +12,7 @@ Real Virtual Human Group, University of Tübingen & Tübingen AI Center
 ### Install dependencies
 
 Setup (with [conda](https://docs.conda.io/en/latest/)): 
-with `environment.yml` file (if you have old Nvidia GPU, compatible with cuda 11.1):
+with `environment.yml` file (tested on cuda 11.7):
 ```
 conda env create -f environment.yml
 ```
