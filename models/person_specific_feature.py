@@ -238,7 +238,7 @@ class NSF_SurfaceVertsFeatures(nn.Module):
             if not exists(sp):
                 os.makedirs(sp)
             np.save(path_feat, self.features[n].detach().cpu().numpy())
-            print('Saved {} specific feature and vertex color at epoch {}'.format(subject_garment, epoch))
+            print('Saved {} specific NSF feature at epoch {}'.format(subject_garment, epoch))
 
     def load_features(self, pretrained_feature_path):
         
