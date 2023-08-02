@@ -139,7 +139,7 @@ if __name__ == "__main__":
     }
 
     # preprocessed path 
-    preprocessed_buff_path = ROOT_DIR + 'Data_female/BuFF/buff_release_rot_const/sequences'
+    preprocessed_buff_path = ROOT_DIR + 'Data/BuFF/buff_release_rot_const/sequences'
 
     dataset = DataLoader_Buff_depth_rootfinding(proprocessed_path=preprocessed_buff_path, batch_size=args.batch_size, num_workers=4, subject_index_dict=subject_index_dict)  
     trainer = Trainer(module_dict, device=torch.device("cuda"), dataset=dataset)
