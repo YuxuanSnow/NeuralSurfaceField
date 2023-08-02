@@ -34,6 +34,7 @@ pip install opencv-python
 python -m pip install numpy==1.23.1
 pip install trimesh
 python -m pip install -U scikit-image
+pip install cython
 ```
 In addition, install `kaolin` from source (https://kaolin.readthedocs.io/en/latest/notes/installation.html) and modify:
 ```
@@ -41,10 +42,10 @@ git clone --recursive https://github.com/NVIDIAGameWorks/kaolin
 cd kaolin
 git checkout v0.13.0
 python setup.py develop
-# modify trianglemesh.py to enable different number of faces for multiple subject
-# replace KAOLIN_DIR/kaolin/kaolin/metrics/trianglemesh.py with kaolin/trianglemesh.py
-# make sure that only function point_to_mesh_distance is modified
 ```
+After installed `kaolin`, modify `trianglemesh.py` to enable different number of faces for multiple subject:
+replace `KAOLIN_DIR/kaolin/kaolin/metrics/trianglemesh.py` with `ROOT_DIR/kaolin/trianglemesh.py`. Make sure that only function point_to_mesh_distance is modified
+
 
 ### Downlod SMPL model
 1. Download SMPL (https://smpl.is.tue.mpg.de/) model
