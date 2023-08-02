@@ -45,14 +45,14 @@ class Trainer(Basic_Trainer_sdf):
         with torch.no_grad():
 
             self.set_feat_training_mode(train_flag=False)
+
+            device = self.device
+
+            self.set_module_training_mode(train_flag=False)
             
-            for n, batch in enumerate(tqdm(val_data_loader)):
+            for subj_garment in self.val_dataset.subject_index_dict.keys():
 
-                device = self.device
-
-                self.set_module_training_mode(train_flag=False)
-
-                feature_cube_idx = batch.get('feature_cube_idx').to(device)
+                feature_cube_idx = torch.tensor(self.val_dataset.subject_index_dict[subj_garment])[None].to(device)
 
                 feature = self.subject_global_latent.get_feature(feature_cube_idx)
 
@@ -61,22 +61,20 @@ class Trainer(Basic_Trainer_sdf):
 
                 verts, faces, normals, values = condition_reconstruction(self.conditional_sdf, device, feature, resolution=int(save_name.split('_')[1]), thresh=0.00001, b_min=bbox_min, b_max=bbox_max, texture_net=None)
 
-                names = batch.get('path')
+                subject = subj_garment.split('_')[0]
+                garment = subj_garment.split('_')[1]
+                save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
 
-                for i in range(len(names)):
-                    file_path = names[i]
-                    subject = file_path.split('/')[position] # if local 9; if cluster 12
-                    garment = split(file_path)[1].split('_')[0]
-                    save_folder = join(self.exp_path, save_name + '_ep_{}'.format(epoch), subject, garment)
+                if not os.path.exists(save_folder):
+                    os.makedirs(save_folder)
 
-                    if not os.path.exists(save_folder):
-                        os.makedirs(save_folder)
+                import open3d as o3d
+                mesh = o3d.geometry.TriangleMesh()
+                mesh.vertices = o3d.utility.Vector3dVector(verts)
+                mesh.triangles = o3d.utility.Vector3iVector(faces)
+                o3d.io.write_triangle_mesh(os.path.join(save_folder, 'coarse_shape.ply'), mesh)
 
-                    import open3d as o3d
-                    mesh = o3d.geometry.TriangleMesh()
-                    mesh.vertices = o3d.utility.Vector3dVector(verts)
-                    mesh.triangles = o3d.utility.Vector3iVector(faces)
-                    o3d.io.write_triangle_mesh(os.path.join(save_folder, 'coarse_shape.ply'), mesh)
+                    
                 
     def project_fusion_shape(self, save_name='Recon', num_samples=-1, pretrained=None, checkpoint=None):
 
@@ -390,7 +388,7 @@ if __name__ == "__main__":
     # experiment id for folder suffix
     parser.add_argument('-exp_id', '--exp_id', type=str)
     parser.add_argument('-pretrained_exp', '--pretrained_exp', type=str)
-    parser.add_argument('-batch_size', '--batch_size', default=8, type=int)
+    parser.add_argument('-batch_size', '--batch_size', default=1, type=int)
     parser.add_argument('-split_file', '--split_file', type=str)
     parser.add_argument('-epochs', '--epochs', default=301, type=int)
     # val, ft, pose_track, animate, detail_recon
