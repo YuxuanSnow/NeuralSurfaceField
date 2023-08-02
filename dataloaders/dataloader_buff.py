@@ -49,7 +49,7 @@ class DataLoader_Buff_depth_rootfinding(BaseLoader):
         self.ref_shaped_points = []
         self.hand_mask, self.feet_mask, self.head_mask = [], [], []
         self.skinning_weights = []
-        self.pose, self.betas, self.trans, self.roty = [], [], [], []
+        self.pose, self.betas, self.trans, self.roty, self.pose_root = [], [], [], [], []
         self.feature_cube_idx = []
         self.depth_map = []
         self.rgb_map = []
@@ -86,6 +86,7 @@ class DataLoader_Buff_depth_rootfinding(BaseLoader):
             self.ref_shaped_points.append(torch.tensor(dd['points_ref_smpl'].transpose().transpose()).float())
             self.skinning_weights.append(torch.tensor(dd['skinning_weights'].transpose().transpose()).float())
             self.pose.append(torch.tensor(dd['pose']).float())
+            self.pose_root.append(torch.tensor(dd['pose_root']).float())
             self.betas.append(torch.tensor(dd['betas']).float())
             self.trans.append(torch.tensor(dd['trans']).float())
             self.roty.append(torch.tensor(dd['rot_vector']).float())
@@ -101,6 +102,7 @@ class DataLoader_Buff_depth_rootfinding(BaseLoader):
                 'scan_points_rotated': self.scan_points_rotated[idx],
                 'scan_normals_rotated': self.scan_normals_rotated[idx],
                 'pose': self.pose[idx],
+                'pose_root': self.pose_root[idx],
                 'betas': self.betas[idx],
                 'ref_shaped_points': self.ref_shaped_points[idx],
                 'feature_cube_idx': self.feature_cube_idx[idx],
@@ -149,7 +151,7 @@ class DataLoader_Buff_depth(BaseLoader):
         self.ref_shaped_points = []
         self.hand_mask, self.feet_mask, self.head_mask = [], [], []
         self.skinning_weights = []
-        self.pose, self.betas, self.trans, self.roty = [], [], [], []
+        self.pose, self.betas, self.trans, self.roty, self.pose_root = [], [], [], [], []
         self.feature_cube_idx = []
         self.depth_map = []
         self.rgb_map = []
@@ -248,6 +250,7 @@ class DataLoader_Buff_depth(BaseLoader):
             self.ref_shaped_points.append(torch.tensor(dd['points_ref_smpl'].transpose()[valid_mask][idx_list].transpose()).float())
             self.skinning_weights.append(torch.tensor(dd['skinning_weights'].transpose()[valid_mask][idx_list].transpose()).float())
             self.pose.append(torch.tensor(dd['pose']).float())
+            self.pose_root.append(torch.tensor(dd['pose_root']).float())
             self.betas.append(torch.tensor(dd['betas']).float())
             self.trans.append(torch.tensor(dd['trans']).float())
             self.roty.append(torch.tensor(dd['rot_vector']).float())
@@ -265,6 +268,7 @@ class DataLoader_Buff_depth(BaseLoader):
                     'scan_points_rotated': self.scan_points_rotated[idx],
                     'scan_normals_rotated': self.scan_normals_rotated[idx],
                     'pose': self.pose[idx],
+                    'pose_root': self.pose_root[idx],
                     'betas': self.betas[idx],
                     'ref_shaped_points': self.ref_shaped_points[idx],
                     'feature_cube_idx': self.feature_cube_idx[idx],
@@ -283,6 +287,7 @@ class DataLoader_Buff_depth(BaseLoader):
                     'scan_points_rotated': self.scan_points_rotated[idx],
                     'scan_normals_rotated': self.scan_normals_rotated[idx],
                     'pose': self.pose[idx],
+                    'pose_root': self.pose_root[idx],
                     'betas': self.betas[idx],
                     'ref_shaped_points': self.ref_shaped_points[idx],
                     'feature_cube_idx': self.feature_cube_idx[idx],
