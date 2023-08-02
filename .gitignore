@@ -21,6 +21,7 @@ assets/data_split/*
 *.sh
 cluster/*
 data_backup/*
+data_animation/*
 
 libs/global_variable.py
 
