@@ -18,16 +18,16 @@ class SmplPaths:
 
     def get_smpl_file(self):
         if self.gender == 'neutral':
-            return join(ROOT_DIR,
-                        'basicmodel_neutral_lbs_10_207_0_v1.1.0.pkl')
+            return join(ROOT_DIR, 'smpl_model',
+                        'basicmodel_neutral_lbs_10_207_0_v1.0.0.pkl')
 
         elif self.gender == 'male':
-            return join(ROOT_DIR,
-                             'basicmodel_m_lbs_10_207_0_v1.1.0.pkl')
+            return join(ROOT_DIR, 'smpl_model',
+                             'basicmodel_m_lbs_10_207_0_v1.0.0.pkl')
 
         elif self.gender == 'female':
-            return join(ROOT_DIR,
-                             'basicmodel_f_lbs_10_207_0_v1.1.0.pkl')
+            return join(ROOT_DIR, 'smpl_model',
+                             'basicModel_f_lbs_10_207_0_v1.0.0.pkl')
 
         else:
             print('Please check the gender.')
