@@ -120,3 +120,5 @@ python buff_nsf_male.py --exp_id 11 --batch_size 2 --split_file ./assets/data_sp
 python buff_nsf_female.py --exp_id 12 --batch_size 2 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
 ```
 Please adjust the hyperparameter for learning rate decay given the amount of samples in your training data.
+
+The Marching Cube extracted fusion shapes have inverted normals. Handle it in `Meshlab` by: `Filters - Normals, Curvatures and Orientation - Invert face orientation` 
