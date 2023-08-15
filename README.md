@@ -3,7 +3,7 @@
 
 In ICCV 2023, Paris
 
-[Yuxuan Xue](https://yuxuan-xue.com/)\*, [Bharat Lal Bhatnagar](PlaceHolder)\*, [Riccardo Marin](https://ricma.netlify.app/), [PlaceHolder](PlaceHolder), [PlaceHolder](PlaceHolder), [PlaceHolder](PlaceHolder), [Gerard Pons-Moll](https://virtualhumans.mpi-inf.mpg.de/people/pons-moll.html) 
+[Yuxuan Xue](https://yuxuan-xue.com/)\*, [Bharat Lal Bhatnagar](https://virtualhumans.mpi-inf.mpg.de/people/Bhatnagar.html)\*, [Riccardo Marin](https://ricma.netlify.app/), [Nikolaos Sarafianos](https://nsarafianos.github.io/), [Yuanlu Xu](https://web.cs.ucla.edu/~yuanluxu/), [Gerard Pons-Moll](https://virtualhumans.mpi-inf.mpg.de/people/pons-moll.html), [Tony Tung](https://sites.google.com/site/tony2ng/)
 
 
 Real Virtual Human Group, University of Tübingen & Tübingen AI Center
