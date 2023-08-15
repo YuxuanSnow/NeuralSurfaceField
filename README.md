@@ -3,10 +3,11 @@
 
 In ICCV 2023, Paris
 
-[Yuxuan Xue](https://yuxuan-xue.com/)\*, [Bharat Lal Bhatnagar](https://virtualhumans.mpi-inf.mpg.de/people/Bhatnagar.html)\*, [Riccardo Marin](https://ricma.netlify.app/), [Nikolaos Sarafianos](https://nsarafianos.github.io/), [Yuanlu Xu](https://web.cs.ucla.edu/~yuanluxu/), [Gerard Pons-Moll](https://virtualhumans.mpi-inf.mpg.de/people/pons-moll.html), [Tony Tung](https://sites.google.com/site/tony2ng/)
+[Yuxuan Xue](https://yuxuan-xue.com/)<sup>1, *</sup>, [Bharat Lal Bhatnagar](https://virtualhumans.mpi-inf.mpg.de/people/Bhatnagar.html)<sup>2,*</sup>, [Riccardo Marin](https://ricma.netlify.app/)<sup>2,*</sup>, [Nikolaos Sarafianos](https://nsarafianos.github.io/)<sup>2,*</sup>, [Yuanlu Xu](https://web.cs.ucla.edu/~yuanluxu/)<sup>2,*</sup>, [Gerard Pons-Moll](https://virtualhumans.mpi-inf.mpg.de/people/pons-moll.html)<sup>1,*</sup>, [Tony Tung](https://sites.google.com/site/tony2ng/)<sup>2,*</sup>
 
 
-Real Virtual Human Group, University of Tübingen & Tübingen AI Center
+<sup>1</sup>Real Virtual Human Group at University of Tübingen & Tübingen AI Center & Max Planck Institute for Informatics \
+<sup>2</sup>Meta Reality Lab Research
 
 ## Background
 ### Install dependencies
