@@ -41,6 +41,7 @@ python buff_root_finding_female.py
 python buff_fusion_shape_male.py --exp_id 1 --batch_size 1 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
 python buff_fusion_shape_female.py --exp_id 2 --batch_size 1 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
 ```
+The Marching Cube extracted fusion shapes have inverted normals. Handle it in `Meshlab` by: `Filters - Normals, Curvatures and Orientation - Invert face orientation` 
 
 ### Learn Neural Surface Field based on Fusion Shape
 ```
@@ -49,4 +50,16 @@ python buff_nsf_female.py --exp_id 12 --batch_size 2 --split_file ./assets/data_
 ```
 Please adjust the hyperparameter for learning rate decay given the amount of samples in your training data.
 
-The Marching Cube extracted fusion shapes have inverted normals. Handle it in `Meshlab` by: `Filters - Normals, Curvatures and Orientation - Invert face orientation` 
+
+## Citation
+
+```bibtex
+@inproceedings{xue2023nsf,
+  title     = {{NSF: Neural Surface Field for Human Modeling from Monocular Depth}},
+  author    = {Xue, Yuxuan and Bhatnagar, Bharat Lal and Marin, Riccardo and Sarafianos, Nikolaos and Xu, Yuanlu and Pons-Moll, Gerard and Tung, Tony.},
+  booktitle = {Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)},
+  month     = {October},
+  year      = {2023},
+}
+
+
