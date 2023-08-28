@@ -9,6 +9,17 @@ In ICCV 2023, Paris
 <sup>1</sup>Real Virtual Human Group @ University of Tübingen & Tübingen AI Center & Max Planck Institute for Informatics \
 <sup>2</sup>Meta Reality Lab Research 
 
+## Preparation
+##### 1. Dependencies
+Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/tree/main/libs#readme) for:
+- install conda environment and required packages
+- obtain SMPL model
+- obtain prediffused SMPL skinning weights field
+##### 2. Data
+Please refer to [Data](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/depth_renderer/README.md) for:
+- render depth frames from scan
+- preprocess data
+
 ## Running
 ### Learn Fusion Shape via SDF
 ##### 1. Canonicalize Input Partial Shape
