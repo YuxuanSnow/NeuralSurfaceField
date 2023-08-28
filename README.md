@@ -11,20 +11,20 @@ In ICCV 2023, Paris
 
 ## Running
 ### Learn Fusion Shape via SDF
-#### 1. Canonicalize Input Partial Shape
+##### 1. Canonicalize Input Partial Shape
 canonicalize input partial shape by root finding, save to preprocessed file.
 ```
 python buff_root_finding_male.py
 python buff_root_finding_female.py
 ```
 
-#### 2. Learn Canonical Fusion Shape
+##### 2. Learn Canonical Fusion Shape
 ```
 python buff_fusion_shape_male.py --exp_id 1 --batch_size 1 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
 python buff_fusion_shape_female.py --exp_id 2 --batch_size 1 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
 ```
 
-### 2. Learn Neural Surface Field based on Fusion Shape
+### Learn Neural Surface Field based on Fusion Shape
 ```
 python buff_nsf_male.py --exp_id 11 --batch_size 2 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
 python buff_nsf_female.py --exp_id 12 --batch_size 2 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
