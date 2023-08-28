@@ -11,7 +11,12 @@ In ICCV 2023, Paris
 
 ![](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/assets/data_split/teaser.png)
 
-## Preparation
+## News :triangular_flag_on_post:
+- [2023/08/29] Code for NSF is available.
+- [2023/07/14] NSF is accepted to ICCV 2023, Paris.
+  
+## Instruction
+### Preparation
 ##### 1. Dependencies
 Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/tree/main/libs#readme) for:
 - install conda environment and required packages
@@ -22,7 +27,7 @@ Please refer to [Data](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/mai
 - render depth frames from scan
 - preprocess data
 
-## Running
+### Running
 ### Learn Fusion Shape via SDF
 ##### 1. Canonicalize Input Partial Shape
 canonicalize input partial shape by root finding, save to preprocessed file.
