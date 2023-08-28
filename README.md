@@ -1,5 +1,5 @@
 # NSF: Neural Surface Field for Human Modeling from Monocular Depth
-#### [Project Page](yuxuan-xue.com/nsf) | [Video](PlaceHolder) | [Paper](PlaceHolder)
+#### [Project Page](https://yuxuan-xue.com/nsf) | [Video](PlaceHolder) | [Paper](PlaceHolder)
 
 In ICCV 2023, Paris
 
