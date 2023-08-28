@@ -9,6 +9,8 @@ In ICCV 2023, Paris
 <sup>1</sup>Real Virtual Human Group @ University of Tübingen & Tübingen AI Center & Max Planck Institute for Informatics \
 <sup>2</sup>Meta Reality Lab Research 
 
+![](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/assets/data_split/teaser.png)
+
 ## Preparation
 ##### 1. Dependencies
 Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/tree/main/libs#readme) for:
