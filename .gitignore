@@ -21,7 +21,8 @@ assets/data_split/*
 *.sh
 cluster/*
 data_backup/*
-data_animation/*
+data_animation/aist_demo/*
+data_animation/aist_poses.npy
 
 libs/global_variable.py
 
