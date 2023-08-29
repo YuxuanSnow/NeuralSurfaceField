@@ -19,7 +19,7 @@ In ICCV 2023, Paris
 
 
 ## Key Insight :raised_hands:
-- Define neural field on top of continuous surface
+- Define neural fields on top of continuous surface
 - Learned NSF generalizes to arbitrary resolution or topology of the surface
 - Why benefitial For clothed human modelling:
   - eliminates need for Marching Cube / Poisson Reconstruction per frame => **efficient**
