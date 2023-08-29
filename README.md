@@ -12,8 +12,22 @@ In ICCV 2023, Paris
 ![](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/assets/data_split/teaser.png)
 
 ## News :triangular_flag_on_post:
+- [2023/08/30] NSF paper is available on ArXiv.
 - [2023/08/29] Code for NSF is available.
 - [2023/07/14] NSF is accepted to ICCV 2023, Paris.
+
+
+
+## Key Insight :raised_hands:
+- Define neural field on top of continuous surface
+- Learned NSF generalizes to arbitrary resolution or topology of the surface
+- Why benefitial For clothed human modelling:
+  - eliminates need for Marching Cube / Poisson Reconstruction per frame => **efficient**
+  - can reconstruct / animate human mesh resolution / topology => **flexible**
+  - keeps mesh coherency across different frames => **modelling**
+
+![](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/assets/data_split/nsf_idea.png)
+
   
 ## Instruction
 ### A. Preparation
