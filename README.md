@@ -42,7 +42,7 @@ Please refer to [NSF](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main
 
 ### C. Pre-trained Model
 Please refer to [Pretrained Models](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/models/pretrained_model.md) for:
-- available pretrained models for subjects in BuFF dataset
+- available pretrained models for subjects in BuFF/CAPE dataset
 
 
 ## Citation
