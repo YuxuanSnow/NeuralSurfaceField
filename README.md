@@ -29,26 +29,15 @@ Please refer to [Data](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/mai
 
 ### B. Running
 #### Learn Fusion Shape via SDF
-##### 1. Canonicalize Input Partial Shape
-canonicalize input partial shape by root finding, save to preprocessed file.
-```
-python buff_root_finding_male.py
-python buff_root_finding_female.py
-```
-
-##### 2. Learn Canonical Fusion Shape
-```
-python buff_fusion_shape_male.py --exp_id 1 --batch_size 1 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
-python buff_fusion_shape_female.py --exp_id 2 --batch_size 1 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
-```
-The Marching Cube extracted fusion shapes have inverted normals. Handle it in `Meshlab` by: `Filters - Normals, Curvatures and Orientation - Invert face orientation` 
+Please refer to [Fusion Shape](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/models/Fusion_shape.md) for:
+- learn implicit fusion shape
+- fit SMPL-D to fusion shape
+- project off-surface points onto fusion shape
 
 #### Learn Neural Surface Field based on Fusion Shape
-```
-python buff_nsf_male.py --exp_id 11 --batch_size 2 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
-python buff_nsf_female.py --exp_id 12 --batch_size 2 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
-```
-Please adjust the hyperparameter for learning rate decay given the amount of samples in your training data.
+Please refer to [NSF](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/models/NSF.md) for:
+- learn NSF to model clothed avatar
+- infer clothed avatar at arbitrary resolution
 
 
 ## Citation
