@@ -61,7 +61,7 @@ Please refer to [Pretrained Models](https://github.com/YuxuanSnow/NeuralSurfaceF
 - available pretrained models for subjects in BuFF/CAPE dataset
 
 
-## Citation
+## Citation :writing_hand:
 
 ```bibtex
 @inproceedings{xue2023nsf,
