@@ -25,7 +25,7 @@ python buff_nsf_male.py --exp_id 11 --batch_size 1 --split_file ./assets/data_sp
 ```
 
 ##### 4. Animate using desired pose sequence at arbitrary resolution
-Download the AIST demo pose sequence from [here](https://github.com/xuchen-ethz/fast-snarf/blob/master/download_data.sh)
+Download the AIST demo pose sequence from [here](https://github.com/xuchen-ethz/fast-snarf/blob/master/download_data.sh) and preprocess into `.npy` file using [this file](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/data_animation/preprocess.py)
 ```
 # with subdivided smpl_d topology
 python buff_nsf_male.py --exp_id 11 --batch_size 1 --split_file ./assets/data_split/buff_male_train_val.pkl --mode animate --fusion_shape smpld_sub
