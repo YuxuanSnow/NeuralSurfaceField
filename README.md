@@ -26,6 +26,8 @@ Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/
 Please refer to [Data](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/depth_renderer/README.md) for:
 - render depth frames from scan
 - preprocess data
+##### 3. Path
+Please specify `ROOT_DIR` and `DATA_DIR` [here](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/libs/global_variable.py)
 
 ### B. Running
 #### Learn Fusion Shape via SDF
