@@ -16,7 +16,7 @@ In ICCV 2023, Paris
 - [2023/07/14] NSF is accepted to ICCV 2023, Paris.
   
 ## Instruction
-### Preparation
+### A. Preparation
 ##### 1. Dependencies
 Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/tree/main/libs#readme) for:
 - install conda environment and required packages
@@ -27,8 +27,8 @@ Please refer to [Data](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/mai
 - render depth frames from scan
 - preprocess data
 
-### Running
-### Learn Fusion Shape via SDF
+### B. Running
+#### Learn Fusion Shape via SDF
 ##### 1. Canonicalize Input Partial Shape
 canonicalize input partial shape by root finding, save to preprocessed file.
 ```
@@ -43,7 +43,7 @@ python buff_fusion_shape_female.py --exp_id 2 --batch_size 1 --split_file ./asse
 ```
 The Marching Cube extracted fusion shapes have inverted normals. Handle it in `Meshlab` by: `Filters - Normals, Curvatures and Orientation - Invert face orientation` 
 
-### Learn Neural Surface Field based on Fusion Shape
+#### Learn Neural Surface Field based on Fusion Shape
 ```
 python buff_nsf_male.py --exp_id 11 --batch_size 2 --split_file ./assets/data_split/buff_male_train_val.pkl --mode train --epochs 301
 python buff_nsf_female.py --exp_id 12 --batch_size 2 --split_file ./assets/data_split/buff_female_train_val.pkl --mode train --epochs 301
