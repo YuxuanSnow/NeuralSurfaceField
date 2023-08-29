@@ -29,7 +29,7 @@ In ICCV 2023, Paris
 ![](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/assets/data_split/nsf_idea.png)
 
   
-## Instruction
+## Instruction :blue_book:
 ### A. Preparation
 ##### 1. Dependencies
 Please refer to [Dependencies](https://github.com/YuxuanSnow/NeuralSurfaceField/tree/main/libs#readme) for:
