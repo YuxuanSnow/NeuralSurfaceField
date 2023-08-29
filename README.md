@@ -38,6 +38,7 @@ Please refer to [Fusion Shape](https://github.com/YuxuanSnow/NeuralSurfaceField/
 Please refer to [NSF](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/models/NSF.md) for:
 - learn NSF to model clothed avatar
 - infer clothed avatar at arbitrary resolution
+- animate clothed avatar with desired pose sequences
 
 
 ## Citation
