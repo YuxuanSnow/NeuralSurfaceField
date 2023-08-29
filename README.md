@@ -40,6 +40,10 @@ Please refer to [NSF](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main
 - infer clothed avatar at arbitrary resolution
 - animate clothed avatar with desired pose sequences
 
+### C. Pre-trained Model
+Please refer to [Pretrained Models](https://github.com/YuxuanSnow/NeuralSurfaceField/blob/main/models/pretrained_model.md) for:
+- available pretrained models for subjects in BuFF dataset
+
 
 ## Citation
 
