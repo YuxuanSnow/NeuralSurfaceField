@@ -29,7 +29,6 @@ from trainer.data_parallel import MyDataParallel
 
 from trainer.basic_trainer_nsf import Basic_Trainer_nsf
 from libs.sample import compute_smaple_on_body_mask_w_batch
-from libs.barycentric_corr_finding import point_to_mesh_distance, face_vertices
 from libs.data_io import save_result_ply
 
 from pytorch3d.ops import sample_points_from_meshes
@@ -91,11 +90,15 @@ class Trainer(Basic_Trainer_nsf):
                     garment = subj_garment.split('_')[1] 
                     save_folder = join(self.exp_path, save_animation + '_ep_{}'.format(epoch), subject, garment, str(n))
 
+                    # to avoid [-1,-1,-1] invalid faces
+                    face = faces_new[0][faces_new[0]!=torch.tensor([-1, -1, -1]).to(device)].reshape(-1, 3)
+
                     if not os.path.exists(save_folder):
                         os.makedirs(save_folder)
 
-                    save_ply(save_folder+'/posed_mesh.ply', verts=pred_posed_cloth_verts[0], faces=faces_new[0])
-                    save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[0], faces=faces_new[0])
+                    save_ply(save_folder+'/posed_mesh.ply', verts=pred_posed_cloth_verts[0], faces=face)
+                    save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[0], faces=face)
+
     
     # test on seen subjects but unseen subject
     def test_model(self, save_name, num_samples=-1, pretrained=None, checkpoint=None):
@@ -162,11 +165,13 @@ class Trainer(Basic_Trainer_nsf):
                     # save predicted reposed correspondence
                     save_result_ply(save_folder, points=pred_posed_cloth_points_corr[i], normals=pred_posed_normals_corr[i], gt=gt_posed_cloth_points[i][on_body_mask[i]], gt_normals=gt_posed_cloth_normals[i][on_body_mask[i]])
 
-                    save_ply(save_folder+'/posed_mesh.ply', verts=pred_posed_cloth_verts[i], faces=faces_new[i])
-                    save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[i], faces=faces_new[i])
-
+                    # to avoid [-1,-1,-1] invalid faces
+                    face = faces_new[i][faces_new[i]!=torch.tensor([-1, -1, -1]).to(device)].reshape(-1, 3)
+                    save_ply(save_folder+'/posed_mesh.ply', verts=pred_posed_cloth_verts[i], faces=face)
+                    save_ply(save_folder+'/cano_mesh.ply', verts=pred_cano_cloth_verts[i], faces=face)
+                    
                     if add_root_rotation:
-                        save_ply(save_folder+'/posed_mesh_rot.ply', verts=pred_posed_cloth_verts_rot[i], faces=faces_new[i])
+                        save_ply(save_folder+'/posed_mesh_rot.ply', verts=pred_posed_cloth_verts_rot[i], faces=face)
 
 
     def predict(self, batch, animate=False, train=True):
@@ -307,6 +312,7 @@ if __name__ == "__main__":
     parser.add_argument('-epochs', '--epochs', default=300, type=int)
     # val, ft, pose_track, animate, detail_recon
     parser.add_argument('-mode', '--mode', default='train', type=str)
+    parser.add_argument('-fusion_shape', '--fusion_shape', default='smpld_sub', type=str)
     parser.add_argument('-save_name', '--save_name', default='smpld_sub', type=str)
 
     args = parser.parse_args()
@@ -346,7 +352,7 @@ if __name__ == "__main__":
     }
     
     # for local feature query based on SMPL-D mesh template and decoding local feature to the pose-dependent offset
-    nsf_feature_surface = MyDataParallel(NSF_SurfaceVertsFeatures(args.num_subjects, args.subject_paths, pretrained_feature_exp=args.pretrained_feature_exp_path, feat_dim=64, data='BUFF'))
+    nsf_feature_surface = MyDataParallel(NSF_SurfaceVertsFeatures(args.num_subjects, args.subject_paths, pretrained_feature_exp=args.pretrained_feature_exp_path, feat_dim=64, data='BUFF', fusion_shape_mode=args.fusion_shape))
     pose_encoder = MyDataParallel(PoseEncoder(in_features=72, out_features=24))
     # 64: point-wise feature
     # 24: pose features (global)
