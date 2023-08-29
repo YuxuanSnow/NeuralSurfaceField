@@ -142,7 +142,7 @@ class SubjectGlobalLatentFeature(nn.Module):
 
 # load smpl + d coarse template and define features 
 class NSF_SurfaceVertsFeatures(nn.Module):
-    def __init__(self, num_subjects, subject_paths, pretrained_feature_exp=None, feat_dim=16, data='BUFF'):
+    def __init__(self, num_subjects, subject_paths, pretrained_feature_exp=None, feat_dim=16, data='BUFF', fusion_shape_mode='smpld_sub'):
         """
         Person specific features, represented in mesh vertices of the coarse shape.
         subject_paths: list of paths to each subject's specific features.
@@ -152,6 +152,7 @@ class NSF_SurfaceVertsFeatures(nn.Module):
 
         self.dim = feat_dim
         self.data_set = data
+        self.fusion_shape_mode = fusion_shape_mode
 
         assert num_subjects == len(subject_paths)
         self.subject_paths = subject_paths
@@ -213,8 +214,18 @@ class NSF_SurfaceVertsFeatures(nn.Module):
             subject = sp.split('/')[-2]
 
             # subject_smpld_path = join(base_smpld_path, subject, garment, 'smpl_D_'+subject+'_'+garment+'.ply')
-            subject_smpld_path = join(base_smpld_path, 'smpl_D_'+subject+'_'+garment+'_subdivided.ply')
-            # subject_smpld_path = join(base_smpld_path, subject, garment, 'mc_128_'+subject+'_'+garment+'.ply')
+            if self.fusion_shape_mode == 'smpld':
+                subject_smpld_path = join(base_smpld_path, 'smpl_D_'+subject+'_'+garment+'.ply')
+            elif self.fusion_shape_mode == 'smpld_sub':
+                subject_smpld_path = join(base_smpld_path, 'smpl_D_'+subject+'_'+garment+'_subdivided.ply')
+            elif self.fusion_shape_mode == 'mc_128':
+                subject_smpld_path = join(base_smpld_path, 'MC_'+subject+'_'+garment+'_128.ply')
+            elif self.fusion_shape_mode == 'mc_256':
+                subject_smpld_path = join(base_smpld_path, 'MC_'+subject+'_'+garment+'_256.ply')
+            elif self.fusion_shape_mode == 'mc_512':
+                subject_smpld_path = join(base_smpld_path, 'MC_'+subject+'_'+garment+'_512.ply')
+            else:
+                assert False, "Unknown mode for fusion shape"
 
             file = load_ply(f=subject_smpld_path)
             verts = file[0].float()
