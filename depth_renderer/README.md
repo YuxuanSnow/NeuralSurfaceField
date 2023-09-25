@@ -10,7 +10,6 @@ DATA_DIR/BuFF/buff_release/sequences/subject_id/garment_action/garment_action_fr
 ```
 3. Download gender and minimal body shape from CAPE (https://cape.is.tue.mpg.de/) and unzip it to
 ```
-# The minimal body shape is unavailable yet; We are contacting authors of CAPE for releasing our fitted minimal body shape.
 DATA_DIR/BuFF/buff_release/minimal_body_shape/subject_id/subject_id_param.pkl
 DATA_DIR/BuFF/buff_release/minimal_body_shape/subject_id/subject_id_minimal.pkl
 DATA_DIR/BuFF/buff_release/misc/smpl_tris.npy
