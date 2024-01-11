@@ -51,7 +51,8 @@ replace `KAOLIN_DIR/kaolin/kaolin/metrics/trianglemesh.py` with `ROOT_DIR/kaolin
 
 ### Pre-diffuse SMPL skinning weights field
 We use FITE (Lin et al., ECCV2022) to compute the smooth SMPL skinning weights field. 
-Please refer to `https://github.com/jsnln/fite#3-diffused-skinning` for more information.
+Please refer to `https://github.com/jsnln/fite#3-diffused-skinning` for more information. 
+Our canonical pose is defined differently than in FITE. Thus please comment out https://github.com/jsnln/fite/blob/main/step1_diffused_skinning/compute_diffused_skinning.py#L54-55 to make sure `cpose` is all 0. <br>
 Please copy the computed skinning weights field as well as the canonical pose mesh to `ROOT_DIR/diffused_smpl_skinning_field`. File structure should look like:
 ```
 - ROOT_DIR
